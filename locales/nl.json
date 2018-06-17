@@ -1,0 +1,10 @@
+{
+	"settings": {
+		"app": {
+			"title"				: "Virtuele Radar debug logs",
+			"logs"				: "logs",
+			"deletelogs"	: "verwijder logs",
+			"getlogs"     : "ververs logs"
+		}
+	}
+}

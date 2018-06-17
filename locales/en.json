@@ -1,0 +1,10 @@
+{
+	"settings": {
+		"app": {
+			"title"				: "Virtual Radar debug logs",
+			"logs"				: "logs",
+			"deletelogs"	: "delete logs",
+			"getlogs"     : "get logs"
+		}
+	}
+}
