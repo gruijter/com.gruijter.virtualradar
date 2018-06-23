@@ -10,14 +10,14 @@ ADS-B tracker info from adsbexchange.com
 * Do you want to track your pilot husband all over the world?
 * Do you want a push message when your wife is taking the helicopter again?
 
-### Radar: Live data from aircrafts in radar range###
+### Radar: Live data from aircrafts in radar range ###
 For each radar you can see the number of aircraft in reach, and information from
 the nearest aircraft:
 
 ![image][mobile-card-image1]
 ![image][mobile-card-image2]
 
-### Tracker: Track an individual aircraft###
+### Tracker: Track an individual aircraft ###
 For each tracker you can see the location, direction, altitude, speed,
 destination airport and track time:
 
@@ -89,8 +89,8 @@ If you really like the app you can buy me a beer.
 [![Paypal donate][pp-donate-image]][pp-donate-link]
 
 This app uses:
-ADSBexchange for virtual radar data: https://www.adsbexchange.com/legal-and-privacy/
-OpenStreetMap for reverse geocoding: https://osm.org/copyright
+* ADSBexchange for virtual radar data: https://www.adsbexchange.com/legal-and-privacy/
+* OpenStreetMap for reverse geocoding: https://osm.org/copyright
 
 ===============================================================================
 
