@@ -4,7 +4,7 @@
 		"en": "Virtual Radar",
 		"nl": "Virtuele Radar"
 	},
-	"version": "0.0.8",
+	"version": "2.0.0",
 	"compatibility": ">=1.5.0",
 	"sdk": 2,
 	"description": {
@@ -39,6 +39,19 @@
 		"homey:manager:geolocation"
 	],
 	"capabilities": {
+		"Airborne": {
+				"type": "boolean",
+				"title": {
+						"en": "Airborne",
+						"nl": "In de lucht"
+				},
+				"desc": {
+					"en": "Aircraft is airborne",
+					"nl": "Vliegtuig is in de lucht"
+				},
+				"getable": true,
+				"setable": true
+		},
 		"ac_number": {
 				"type": "number",
 				"title": {
@@ -104,6 +117,19 @@
 				"getable": true,
 				"setable": false
 		},
+		"spd": {
+				"type": "number",
+				"title": {
+						"en": "Speed",
+						"nl": "Snelheid"
+				},
+				"units": {
+					"en": "km/h",
+					"nl": "km/u"
+				},
+				"getable": true,
+				"setable": false
+		},
 		"mdl": {
 				"type": "string",
 				"title": {
@@ -113,6 +139,41 @@
 				"desc": {
 					"en": "Model of the aircraft",
 					"nl": "Model van het vliegtuig"
+				},
+				"getable": true,
+				"setable": false
+		},
+		"loc": {
+				"type": "string",
+				"title": {
+						"en": "Location",
+						"nl": "Locatie"
+				},
+				"desc": {
+					"en": "Location of the aircraft",
+					"nl": "Locatie van het vliegtuig"
+				},
+				"getable": true,
+				"setable": false
+		},
+		"brng": {
+				"type": "string",
+				"title": {
+						"en": "Bearing",
+						"nl": "Richting"
+				},
+				"desc": {
+					"en": "Bearing of the aircraft",
+					"nl": "Vliegrichting"
+				},
+				"getable": true,
+				"setable": false
+		},
+		"tsecs": {
+				"type": "string",
+				"title": {
+						"en": "Track time",
+						"nl": "Track tijd"
 				},
 				"getable": true,
 				"setable": false
@@ -210,6 +271,7 @@
 								"en": "Range (km)",
 								"nl": "Straal (km)"
 							},
+							"attr": { "min": 0, "max": 50000 },
 							"value": 3
 						},
 						{
@@ -228,7 +290,7 @@
 								"en": "Max. altitude (m)",
 								"nl": "Max. hoogte (m)"
 							},
-							"value": 10000
+							"value": 12000
 						},
 						{
 							"id": "pollingInterval",
@@ -374,6 +436,171 @@
 								"nl": "In de lucht"
 							},
 							"value": false
+						},
+						{
+							"id": "sqk",
+							"type": "dropdown",
+							"value": "0000",
+							"label": {
+									"en": "Emergency",
+									"nl": "In nood"
+							},
+							"values": [
+								{
+									"id": "0000",
+									"label": {
+										"en": "---",
+										"nl": "---"
+									}
+								},
+								{
+									"id": "7700",
+									"label": {
+										"en": "Emergency",
+										"nl": "In nood"
+									}
+								},
+								{
+									"id": "7500",
+									"label": {
+										"en": "Hijack",
+										"nl": "Kaping"
+									}
+								},
+								{
+									"id": "7600",
+									"label": {
+										"en": "Lost communications",
+										"nl": "Communicatie storing"
+									}
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"id": "tracker",
+			"name": {
+				"en": "Tracker (ADS-B)",
+				"nl": "Tracker (ADS-B)"
+			},
+			"images": {
+			 "large": "drivers/tracker/assets/images/large.jpg",
+			 "small": "drivers/tracker/assets/images/small.jpg"
+			},
+			"class": "sensor",
+			"capabilities": [ "onoff", "loc", "brng", "alt" , "spd", "to", "tsecs" ],
+			"capabilitiesOptions": {
+				"onoff": {
+					"preventInsights": false,
+					"greyout": true
+				},
+				"alt": {
+					"preventInsights": true
+				},
+				"spd": {
+					"preventInsights": true
+				}
+			},
+			"mobile": {
+				"components": [
+					{
+						"id": "icon",
+						"capabilities": [ "onoff" ]
+					},
+					{
+						"id": "sensor",
+						"capabilities": [ "loc", "brng", "alt" , "spd", "to", "tsecs" ],
+						"options": {
+							"icons": {
+								"loc": "./drivers/tracker/assets/loc.svg",
+								"brng": "./drivers/tracker/assets/brng.svg",
+								"alt": "./drivers/tracker/assets/alt.svg",
+								"spd": "./drivers/tracker/assets/spd.svg",
+								"to": "./drivers/tracker/assets/to.svg",
+								"tsecs": "./drivers/tracker/assets/tsecs.svg"
+							}
+						}
+					}
+				]
+			},
+			"pair": [
+				{
+					"id": "list_devices",
+					"template": "list_devices",
+					"navigation": {
+							"next": "add_devices"
+					}
+				},
+				{
+						"id": "add_devices",
+						"template": "add_devices"
+				}
+			],
+			"settings": [
+				{
+					"type": "group",
+					"label": {
+						"en": "Tracker settings",
+						"nl": "Tracker instellingen"
+					},
+					"children": [
+						{
+							"id": "lat",
+							"type": "number",
+							"label": {
+								"en": "Home latitude",
+								"nl": "Thuis breedtegraad"
+							},
+							"value": 52.228936
+						},
+						{
+							"id": "lng",
+							"type": "number",
+							"label": {
+								"en": "Home longitude",
+								"nl": "Thuis lengtegraad"
+							},
+							"value": 5.321492
+						},
+						{
+							"id": "ico",
+							"type": "text",
+							"label": {
+								"en": "ICAO",
+								"nl": "ICAO"
+							},
+							"value": "------"
+						},
+						{
+							"id": "reg",
+							"type": "text",
+							"label": {
+								"en": "Registration",
+								"nl": "Registratie"
+							},
+							"value": ""
+						},
+						{
+							"id": "call",
+							"type": "text",
+							"label": {
+								"en": "Callsign",
+								"nl": "Callsign"
+							},
+							"value": ""
+						},
+						{
+							"id": "pollingInterval",
+							"type": "number",
+							"label": {
+								"en": "Scan interval (seconds)",
+								"nl": "Scan interval (seconden)"
+							},
+							"attr": { "min": 15 },
+							"value": 180
 						}
 					]
 				}
@@ -419,15 +646,6 @@
 					"example": 309.4
 					},
 					{
-					"name":"gnd",
-					"type": "boolean",
-					"title": {
-						"en":"ground",
-						"nl":"grond"
-						},
-					"example": false
-					},
-					{
 					"name":"alt",
 					"type": "number",
 					"title": {
@@ -455,13 +673,13 @@
 					"example": -12
 					},
 					{
-					"name":"species",
-					"type": "string",
+					"name":"gnd",
+					"type": "boolean",
 					"title": {
-						"en":"species",
-						"nl":"soort"
+						"en":"ground",
+						"nl":"grond"
 						},
-					"example": "Helicopter"
+					"example": false
 					},
 					{
 					"name":"mil",
@@ -471,6 +689,24 @@
 						"nl":"mil"
 						},
 					"example": false
+					},
+					{
+					"name":"help",
+					"type": "boolean",
+					"title": {
+						"en":"help",
+						"nl":"help"
+						},
+					"example": false
+					},
+					{
+					"name":"species",
+					"type": "string",
+					"title": {
+						"en":"species",
+						"nl":"soort"
+						},
+					"example": "Helicopter"
 					},
 					{
 					"name":"icao",
@@ -574,15 +810,6 @@
 					"example": 309.4
 					},
 					{
-					"name":"gnd",
-					"type": "boolean",
-					"title": {
-						"en":"ground",
-						"nl":"grond"
-						},
-					"example": false
-					},
-					{
 					"name":"alt",
 					"type": "number",
 					"title": {
@@ -610,13 +837,13 @@
 					"example": -12
 					},
 					{
-					"name":"species",
-					"type": "string",
+					"name":"gnd",
+					"type": "boolean",
 					"title": {
-						"en":"species",
-						"nl":"soort"
+						"en":"ground",
+						"nl":"grond"
 						},
-					"example": "Helicopter"
+					"example": false
 					},
 					{
 					"name":"mil",
@@ -626,6 +853,24 @@
 						"nl":"mil"
 						},
 					"example": false
+					},
+					{
+					"name":"help",
+					"type": "boolean",
+					"title": {
+						"en":"help",
+						"nl":"help"
+						},
+					"example": false
+					},
+					{
+					"name":"species",
+					"type": "string",
+					"title": {
+						"en":"species",
+						"nl":"soort"
+						},
+					"example": "Helicopter"
 					},
 					{
 					"name":"icao",
@@ -729,6 +974,33 @@
 					"example": 309.4
 					},
 					{
+					"name":"alt",
+					"type": "number",
+					"title": {
+						"en":"alt.",
+						"nl":"hoogte"
+						},
+					"example": 357
+					},
+					{
+					"name":"spd",
+					"type": "number",
+					"title": {
+						"en":"km/h",
+						"nl":"km/u"
+						},
+					"example": 238
+					},
+					{
+					"name":"vsi",
+					"type": "number",
+					"title": {
+						"en":"vert.",
+						"nl":"vert."
+						},
+					"example": -12
+					},
+					{
 					"name":"gnd",
 					"type": "boolean",
 					"title": {
@@ -736,6 +1008,134 @@
 						"nl":"grond"
 						},
 					"example": false
+					},
+					{
+					"name":"mil",
+					"type": "boolean",
+					"title": {
+						"en":"mil",
+						"nl":"mil"
+						},
+					"example": false
+					},
+					{
+					"name":"help",
+					"type": "boolean",
+					"title": {
+						"en":"help",
+						"nl":"help"
+						},
+					"example": false
+					},
+					{
+					"name":"species",
+					"type": "string",
+					"title": {
+						"en":"species",
+						"nl":"soort"
+						},
+					"example": "Helicopter"
+					},
+					{
+					"name":"icao",
+					"type": "string",
+					"title": {
+						"en":"icao",
+						"nl":"icao"
+						},
+					"example": "484A92"
+					},
+					{
+					"name":"reg",
+					"type": "string",
+					"title": {
+						"en":"reg",
+						"nl":"reg"
+						},
+					"example": "PH-PXB"
+					},
+					{
+					"name":"call",
+					"type": "string",
+					"title": {
+						"en":"call",
+						"nl":"call"
+						},
+					"example": "ZXP02"
+					},
+					{
+					"name":"mdl",
+					"type": "string",
+					"title": {
+						"en":"model",
+						"nl":"model"
+						},
+					"example": "Eurocopter EC135 P2+"
+					},
+					{
+					"name":"op",
+					"type": "string",
+					"title": {
+						"en":"oprtr",
+						"nl":"oprtr"
+						},
+					"example": "KLPD Police Aviation Service"
+					},
+					{
+					"name":"from",
+					"type": "string",
+					"title": {
+						"en":"from",
+						"nl":"van"
+						},
+					"example": "EPWA Warsaw Chopin, Poland"
+					},
+					{
+					"name":"to",
+					"type": "string",
+					"title": {
+						"en":"to",
+						"nl":"naar"
+						},
+					"example": "EHAM Amsterdam Airport Schiphol, Netherlands"
+					}
+				]
+			},
+			{
+				"id":"tracker_online",
+				"title": {
+					"en":"Tracker came online",
+					"nl":"Tracker komt online"
+				},
+				"args": [
+					{
+						"name": "tracker",
+						"type": "device",
+						"filter": "driver_id=tracker",
+						"placeholder": {
+							"en": "Which tracker",
+							"nl": "Welke tracker"
+						}
+					}
+				],
+				"tokens":[
+					{
+					"name":"dst",
+					"type": "number",
+					"title": {
+						"en":"dist.",
+						"nl":"afstand"
+						},
+					"example": 14.97
+					},
+					{
+					"name":"brng",
+					"type": "number",
+					"title": {
+						"en":"bearing",
+						"nl":"richting"
+						},
+					"example": 309.4
 					},
 					{
 					"name":"alt",
@@ -765,13 +1165,13 @@
 					"example": -12
 					},
 					{
-					"name":"species",
-					"type": "string",
+					"name":"gnd",
+					"type": "boolean",
 					"title": {
-						"en":"species",
-						"nl":"soort"
+						"en":"ground",
+						"nl":"grond"
 						},
-					"example": "Helicopter"
+					"example": false
 					},
 					{
 					"name":"mil",
@@ -781,6 +1181,680 @@
 						"nl":"mil"
 						},
 					"example": false
+					},
+					{
+					"name":"help",
+					"type": "boolean",
+					"title": {
+						"en":"help",
+						"nl":"help"
+						},
+					"example": false
+					},
+					{
+					"name":"species",
+					"type": "string",
+					"title": {
+						"en":"species",
+						"nl":"soort"
+						},
+					"example": "Helicopter"
+					},
+					{
+					"name":"icao",
+					"type": "string",
+					"title": {
+						"en":"icao",
+						"nl":"icao"
+						},
+					"example": "484A92"
+					},
+					{
+					"name":"reg",
+					"type": "string",
+					"title": {
+						"en":"reg",
+						"nl":"reg"
+						},
+					"example": "PH-PXB"
+					},
+					{
+					"name":"call",
+					"type": "string",
+					"title": {
+						"en":"call",
+						"nl":"call"
+						},
+					"example": "ZXP02"
+					},
+					{
+					"name":"mdl",
+					"type": "string",
+					"title": {
+						"en":"model",
+						"nl":"model"
+						},
+					"example": "Eurocopter EC135 P2+"
+					},
+					{
+					"name":"op",
+					"type": "string",
+					"title": {
+						"en":"oprtr",
+						"nl":"oprtr"
+						},
+					"example": "KLPD Police Aviation Service"
+					},
+					{
+					"name":"from",
+					"type": "string",
+					"title": {
+						"en":"from",
+						"nl":"van"
+						},
+					"example": "EPWA Warsaw Chopin, Poland"
+					},
+					{
+					"name":"to",
+					"type": "string",
+					"title": {
+						"en":"to",
+						"nl":"naar"
+						},
+					"example": "EHAM Amsterdam Airport Schiphol, Netherlands"
+					}
+				]
+			},
+			{
+				"id":"tracker_offline",
+				"title": {
+					"en":"Tracker went offline",
+					"nl":"Tracker gaat offline"
+				},
+				"args": [
+					{
+						"name": "tracker",
+						"type": "device",
+						"filter": "driver_id=tracker",
+						"placeholder": {
+							"en": "Which tracker",
+							"nl": "Welke tracker"
+						 }
+					}
+				],
+				"tokens":[
+					{
+					"name":"dst",
+					"type": "number",
+					"title": {
+						"en":"dist.",
+						"nl":"afstand"
+						},
+					"example": 14.97
+					},
+					{
+					"name":"brng",
+					"type": "number",
+					"title": {
+						"en":"bearing",
+						"nl":"richting"
+						},
+					"example": 309.4
+					},
+					{
+					"name":"alt",
+					"type": "number",
+					"title": {
+						"en":"alt.",
+						"nl":"hoogte"
+						},
+					"example": 357
+					},
+					{
+					"name":"spd",
+					"type": "number",
+					"title": {
+						"en":"km/h",
+						"nl":"km/u"
+						},
+					"example": 238
+					},
+					{
+					"name":"vsi",
+					"type": "number",
+					"title": {
+						"en":"vert.",
+						"nl":"vert."
+						},
+					"example": -12
+					},
+					{
+					"name":"gnd",
+					"type": "boolean",
+					"title": {
+						"en":"ground",
+						"nl":"grond"
+						},
+					"example": false
+					},
+					{
+					"name":"mil",
+					"type": "boolean",
+					"title": {
+						"en":"mil",
+						"nl":"mil"
+						},
+					"example": false
+					},
+					{
+					"name":"help",
+					"type": "boolean",
+					"title": {
+						"en":"help",
+						"nl":"help"
+						},
+					"example": false
+					},
+					{
+					"name":"species",
+					"type": "string",
+					"title": {
+						"en":"species",
+						"nl":"soort"
+						},
+					"example": "Helicopter"
+					},
+					{
+					"name":"icao",
+					"type": "string",
+					"title": {
+						"en":"icao",
+						"nl":"icao"
+						},
+					"example": "484A92"
+					},
+					{
+					"name":"reg",
+					"type": "string",
+					"title": {
+						"en":"reg",
+						"nl":"reg"
+						},
+					"example": "PH-PXB"
+					},
+					{
+					"name":"call",
+					"type": "string",
+					"title": {
+						"en":"call",
+						"nl":"call"
+						},
+					"example": "ZXP02"
+					},
+					{
+					"name":"mdl",
+					"type": "string",
+					"title": {
+						"en":"model",
+						"nl":"model"
+						},
+					"example": "Eurocopter EC135 P2+"
+					},
+					{
+					"name":"op",
+					"type": "string",
+					"title": {
+						"en":"oprtr",
+						"nl":"oprtr"
+						},
+					"example": "KLPD Police Aviation Service"
+					},
+					{
+					"name":"from",
+					"type": "string",
+					"title": {
+						"en":"from",
+						"nl":"van"
+						},
+					"example": "EPWA Warsaw Chopin, Poland"
+					},
+					{
+					"name":"to",
+					"type": "string",
+					"title": {
+						"en":"to",
+						"nl":"naar"
+						},
+					"example": "EHAM Amsterdam Airport Schiphol, Netherlands"
+					}
+				]
+			},
+			{
+				"id":"tracker_present",
+				"title": {
+					"en":"Tracker updated",
+					"nl":"Tracker geupdated"
+				},
+				"args": [
+					{
+						"name": "tracker",
+						"type": "device",
+						"filter": "driver_id=tracker",
+						"placeholder": {
+							"en": "Which tracker",
+							"nl": "Welke tracker"
+						}
+					}
+				],
+				"tokens":[
+					{
+					"name":"dst",
+					"type": "number",
+					"title": {
+						"en":"dist.",
+						"nl":"afstand"
+						},
+					"example": 14.97
+					},
+					{
+					"name":"brng",
+					"type": "number",
+					"title": {
+						"en":"bearing",
+						"nl":"richting"
+						},
+					"example": 309.4
+					},
+					{
+					"name":"alt",
+					"type": "number",
+					"title": {
+						"en":"alt.",
+						"nl":"hoogte"
+						},
+					"example": 357
+					},
+					{
+					"name":"spd",
+					"type": "number",
+					"title": {
+						"en":"km/h",
+						"nl":"km/u"
+						},
+					"example": 238
+					},
+					{
+					"name":"vsi",
+					"type": "number",
+					"title": {
+						"en":"vert.",
+						"nl":"vert."
+						},
+					"example": -12
+					},
+					{
+					"name":"gnd",
+					"type": "boolean",
+					"title": {
+						"en":"ground",
+						"nl":"grond"
+						},
+					"example": false
+					},
+					{
+					"name":"mil",
+					"type": "boolean",
+					"title": {
+						"en":"mil",
+						"nl":"mil"
+						},
+					"example": false
+					},
+					{
+					"name":"help",
+					"type": "boolean",
+					"title": {
+						"en":"help",
+						"nl":"help"
+						},
+					"example": false
+					},
+					{
+					"name":"species",
+					"type": "string",
+					"title": {
+						"en":"species",
+						"nl":"soort"
+						},
+					"example": "Helicopter"
+					},
+					{
+					"name":"icao",
+					"type": "string",
+					"title": {
+						"en":"icao",
+						"nl":"icao"
+						},
+					"example": "484A92"
+					},
+					{
+					"name":"reg",
+					"type": "string",
+					"title": {
+						"en":"reg",
+						"nl":"reg"
+						},
+					"example": "PH-PXB"
+					},
+					{
+					"name":"call",
+					"type": "string",
+					"title": {
+						"en":"call",
+						"nl":"call"
+						},
+					"example": "ZXP02"
+					},
+					{
+					"name":"mdl",
+					"type": "string",
+					"title": {
+						"en":"model",
+						"nl":"model"
+						},
+					"example": "Eurocopter EC135 P2+"
+					},
+					{
+					"name":"op",
+					"type": "string",
+					"title": {
+						"en":"oprtr",
+						"nl":"oprtr"
+						},
+					"example": "KLPD Police Aviation Service"
+					},
+					{
+					"name":"from",
+					"type": "string",
+					"title": {
+						"en":"from",
+						"nl":"van"
+						},
+					"example": "EPWA Warsaw Chopin, Poland"
+					},
+					{
+					"name":"to",
+					"type": "string",
+					"title": {
+						"en":"to",
+						"nl":"naar"
+						},
+					"example": "EHAM Amsterdam Airport Schiphol, Netherlands"
+					}
+				]
+			},
+			{
+				"id":"went_airborne",
+				"title": {
+					"en":"Aircraft went airborne",
+					"nl":"Vliegtuig is opgestegen"
+				},
+				"args": [
+					{
+						"name": "tracker",
+						"type": "device",
+						"filter": "driver_id=tracker",
+						"placeholder": {
+							"en": "Which tracker",
+							"nl": "Welke tracker"
+						}
+					}
+				],
+				"tokens":[
+					{
+					"name":"dst",
+					"type": "number",
+					"title": {
+						"en":"dist.",
+						"nl":"afstand"
+						},
+					"example": 14.97
+					},
+					{
+					"name":"brng",
+					"type": "number",
+					"title": {
+						"en":"bearing",
+						"nl":"richting"
+						},
+					"example": 309.4
+					},
+					{
+					"name":"alt",
+					"type": "number",
+					"title": {
+						"en":"alt.",
+						"nl":"hoogte"
+						},
+					"example": 357
+					},
+					{
+					"name":"spd",
+					"type": "number",
+					"title": {
+						"en":"km/h",
+						"nl":"km/u"
+						},
+					"example": 238
+					},
+					{
+					"name":"vsi",
+					"type": "number",
+					"title": {
+						"en":"vert.",
+						"nl":"vert."
+						},
+					"example": -12
+					},
+					{
+					"name":"gnd",
+					"type": "boolean",
+					"title": {
+						"en":"ground",
+						"nl":"grond"
+						},
+					"example": false
+					},
+					{
+					"name":"mil",
+					"type": "boolean",
+					"title": {
+						"en":"mil",
+						"nl":"mil"
+						},
+					"example": false
+					},
+					{
+					"name":"help",
+					"type": "boolean",
+					"title": {
+						"en":"help",
+						"nl":"help"
+						},
+					"example": false
+					},
+					{
+					"name":"species",
+					"type": "string",
+					"title": {
+						"en":"species",
+						"nl":"soort"
+						},
+					"example": "Helicopter"
+					},
+					{
+					"name":"icao",
+					"type": "string",
+					"title": {
+						"en":"icao",
+						"nl":"icao"
+						},
+					"example": "484A92"
+					},
+					{
+					"name":"reg",
+					"type": "string",
+					"title": {
+						"en":"reg",
+						"nl":"reg"
+						},
+					"example": "PH-PXB"
+					},
+					{
+					"name":"call",
+					"type": "string",
+					"title": {
+						"en":"call",
+						"nl":"call"
+						},
+					"example": "ZXP02"
+					},
+					{
+					"name":"mdl",
+					"type": "string",
+					"title": {
+						"en":"model",
+						"nl":"model"
+						},
+					"example": "Eurocopter EC135 P2+"
+					},
+					{
+					"name":"op",
+					"type": "string",
+					"title": {
+						"en":"oprtr",
+						"nl":"oprtr"
+						},
+					"example": "KLPD Police Aviation Service"
+					},
+					{
+					"name":"from",
+					"type": "string",
+					"title": {
+						"en":"from",
+						"nl":"van"
+						},
+					"example": "EPWA Warsaw Chopin, Poland"
+					},
+					{
+					"name":"to",
+					"type": "string",
+					"title": {
+						"en":"to",
+						"nl":"naar"
+						},
+					"example": "EHAM Amsterdam Airport Schiphol, Netherlands"
+					}
+				]
+			},
+			{
+				"id":"just_landed",
+				"title": {
+					"en":"Aircraft just landed",
+					"nl":"Vliegtuig is geland"
+				},
+				"args": [
+					{
+						"name": "tracker",
+						"type": "device",
+						"filter": "driver_id=tracker",
+						"placeholder": {
+							"en": "Which tracker",
+							"nl": "Welke tracker"
+						}
+					}
+				],
+				"tokens":[
+					{
+					"name":"dst",
+					"type": "number",
+					"title": {
+						"en":"dist.",
+						"nl":"afstand"
+						},
+					"example": 14.97
+					},
+					{
+					"name":"brng",
+					"type": "number",
+					"title": {
+						"en":"bearing",
+						"nl":"richting"
+						},
+					"example": 309.4
+					},
+					{
+					"name":"alt",
+					"type": "number",
+					"title": {
+						"en":"alt.",
+						"nl":"hoogte"
+						},
+					"example": 357
+					},
+					{
+					"name":"spd",
+					"type": "number",
+					"title": {
+						"en":"km/h",
+						"nl":"km/u"
+						},
+					"example": 238
+					},
+					{
+					"name":"vsi",
+					"type": "number",
+					"title": {
+						"en":"vert.",
+						"nl":"vert."
+						},
+					"example": -12
+					},
+					{
+					"name":"gnd",
+					"type": "boolean",
+					"title": {
+						"en":"ground",
+						"nl":"grond"
+						},
+					"example": false
+					},
+					{
+					"name":"mil",
+					"type": "boolean",
+					"title": {
+						"en":"mil",
+						"nl":"mil"
+						},
+					"example": false
+					},
+					{
+					"name":"help",
+					"type": "boolean",
+					"title": {
+						"en":"help",
+						"nl":"help"
+						},
+					"example": false
+					},
+					{
+					"name":"species",
+					"type": "string",
+					"title": {
+						"en":"species",
+						"nl":"soort"
+						},
+					"example": "Helicopter"
 					},
 					{
 					"name":"icao",

@@ -22,7 +22,7 @@ along with com.gruijter.virtualradar.  If not, see <http://www.gnu.org/licenses/
 const Homey = require('homey');
 // const util = require('util');
 
-class RadarDriver extends Homey.Driver {
+class TrackerDriver extends Homey.Driver {
 
 	onInit() {
 		this.log('ScannerDriver onInit');
@@ -30,33 +30,20 @@ class RadarDriver extends Homey.Driver {
 	}
 
 	onPairListDevices(data, callback) {
-		const id = `Radar_${(this.getDevices().length + 1)}`;
+		const id = `Tracker_${(this.getDevices().length + 1)}`;
 		const devices = [
 			{
 				name: id,
 				data: { id },
 				settings: {
-					pollingInterval: 20, // seconds
+					pollingInterval: 180, // seconds
 					lat: Homey.ManagerGeolocation.getLatitude(),
 					lng: Homey.ManagerGeolocation.getLongitude(),
-					altLm: 0, //	Altitude in meter lower limit
-					altUm: 12000, //	Altitude in meter upper limit
-					// dstL: 0, //	Distance in kilometres, lower limit
-					dstU: 5, //	Distance in kilometres, Upper limit
-					mil: false,
-					int: false,
-					sqk: '0000',
+					ico: '------',
+					reg: '',
+					call: '',
 					// filters for after recieving ac list
-					unknown: true,
-					land: true,
-					sea: true,
-					amphibian: true,
-					helicopter: true,
-					gyrocopter: true,
-					tiltwing: true,
-					vehicle: true,
-					tower: true,
-					onlyGnd: false,
+					onlyGnd: true,
 					onlyAir: true,
 				},
 			},
@@ -67,4 +54,4 @@ class RadarDriver extends Homey.Driver {
 
 }
 
-module.exports = RadarDriver;
+module.exports = TrackerDriver;

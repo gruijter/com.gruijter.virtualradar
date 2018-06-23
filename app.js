@@ -84,6 +84,15 @@ class VirtualRadarApp extends Homey.App {
 module.exports = VirtualRadarApp;
 
 // https://github.com/vradarserver/vrs
+
+// https://global.adsbexchange.com/VirtualRadar/IcaoReport.htm?icao=485875
+// https://global.adsbexchange.com/VirtualRadar/RegReport.htm?reg=PH-EXY
+
+//https://developers.google.com/maps/documentation/geocoding/start#ReverseGeocoding  >> Too expensive
+// https://wiki.openstreetmap.org/wiki/Nominatim >> free?
+
+// http://www.airport-data.com/aircraft/ZA670.html
+
 // https://www.adsbexchange.com/data/
 // https://www.adsbexchange.com/datafields/
 // cirle center of NL: 52.228936, 5.321492 range:171km
