@@ -4,11 +4,11 @@
 		"en": "Virtual Radar",
 		"nl": "Virtuele Radar"
 	},
-	"version": "2.0.0",
+	"version": "2.0.1",
 	"compatibility": ">=1.5.0",
 	"sdk": 2,
 	"description": {
-		"en": "Make Homey into an airspace radar based on ADS-B tracker info",
+		"en": "Turn Homey into an airspace radar and tracker based on ADS-B tracker info",
 		"nl": "Maak van Homey een luchtruim radar gebaseerd op ADS-B tracker info"
 	},
 	"tags": {

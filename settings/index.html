@@ -30,17 +30,30 @@
            Homey.ready();
 				 }
 
-        function showLogs() {
-           HomeyAPI.api('GET', 'getlogs/', function(err, result) {
-              if (!err) {
-                 document.getElementById('loglines').innerHTML = '';
-                 for (var i=(result.length - 1); i >= 0; i--) {
-                    document.getElementById('loglines').innerHTML += result[i];
-                    document.getElementById('loglines').innerHTML += "<br />";
-                 }
-              };
-           });
-        }
+				function showLogs() {
+					HomeyAPI.api('GET', 'getlogs/', function(err, result) {
+						if (!err) {
+							document.getElementById('loglines').innerHTML = '';
+							for (var i=(result.length - 1); i >= 0; i--) {
+								var icaoSearch = /(?:icao: ')(.*?)(?:')/g;
+								var callSearch = /(?:call: ')(.*?)(?:')/g;
+								var regSearch = /(?:reg: ')(.*?)(?:')/g;
+								var locSearch = /(?:loc: ')(.*?)(?:')/g;
+								// https://www.openstreetmap.org/?mlat=57.5529102&mlon=22.5148625#map=16/57.5709/22.4579
+								var line = result[i];
+								line = line.replace('[log] [ManagerDrivers]','');
+								line = line.replace(icaoSearch, `<a href="https://junzisun.com/adb/?q=$1">icao: $1</a>`);
+								line = line.replace(callSearch, `<a href="https://uk.flightaware.com/live/flight/$1">call: $1</a>`);
+								// line = line.replace(regSearch, `<a href="http://www.airport-data.com/aircraft/$1.html">reg: $1</a>`);
+								line = line.replace(regSearch, `<a href="https://uk.flightaware.com/live/flight/$1">reg: $1</a>`);
+								line = line.replace(locSearch, `<a href="http://www.osm.org/#map=13/$1" target="_blank">loc: $1</a>`);
+								// line = line.replace(locSearch, `<a href=\"http://www.osm.org/?mlat=${RegExp.$1.split('/')[0]}&mlon=${RegExp.$1.split('/')[1]}#map=13/$1\" target=\"_blank\">loc: $1</a>`);
+								document.getElementById('loglines').innerHTML += line;
+								document.getElementById('loglines').innerHTML += "<br />";
+							}
+						};
+					});
+				}
 				function deleteLogs() {
 					 HomeyAPI.api('GET', 'deletelogs/', function(err, result) {
 						 if (err) {

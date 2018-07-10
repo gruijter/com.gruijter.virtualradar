@@ -97,6 +97,7 @@ This app uses:
 Version changelog
 
 ```
+v2.0.1	2018.07.08 Http optimizations. Added html links in logs.
 v2.0.0	2018.06.23 Added emergency filter and help token. Added tracker driver.
 v0.0.8	2018.06.17 Initial release
 

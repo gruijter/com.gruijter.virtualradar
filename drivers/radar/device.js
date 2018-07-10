@@ -66,7 +66,7 @@ class Radar extends Homey.Device {
 
 	// this method is called when the Device is inited
 	onInit() {
-		this.log(`device init ${this.getClass()} ${this.getData().id}}`);
+		this.log(`device init ${this.getClass()} ${this.getName()}}`);
 		clearInterval(this.intervalIdDevicePoll);	// if polling, stop polling
 		this.lastDv = null;
 		this.acList = [];
@@ -136,7 +136,7 @@ class Radar extends Homey.Device {
 			};
 			const result = await this._makeHttpsRequest(options, '');
 			if (result.statusCode !== 200 || result.headers['content-type'] !== 'application/json') {
-				throw Error(`error: ${result.statusCode} ${result.body.substr(0, 20)}`);
+				return this.error(`adsbexchange service error: ${result.statusCode}`);
 			}
 			const jsonData = JSON.parse(result.body);
 			// this.log(util.inspect(jsonData, { depth: null, colors: true }));
@@ -156,13 +156,13 @@ class Radar extends Homey.Device {
 				const knownAc = this.acList.filter(sac => sac.Id === ac.Id).length;
 				const tokens = getTokens(ac);
 				if (!knownAc) {
-					// this.log(`${ac.Icao} entering airspace!`);
+					// this.log(`icao: '${ac.Icao}' entering airspace!`);
 					this.log(tokens);
 					this.flowCards.acEnteringTrigger
 						.trigger(this, tokens)
 						.catch(this.error);
 				}
-				// this.log(`${ac.Icao} present in airspace!`);
+				// this.log(`icao: '${ac.Icao}' present in airspace!`);
 				this.flowCards.acPresentTrigger
 					.trigger(this, tokens)
 					.catch(this.error);
@@ -170,7 +170,7 @@ class Radar extends Homey.Device {
 			// check for leaving airspace here
 			const leftAc = this.acList.filter(ac => newAcList.filter(tac => tac.Id === ac.Id).length === 0);
 			leftAc.forEach((ac) => {
-				this.log(`${ac.Icao} leaving airspace!`);
+				this.log(`icao: '${ac.Icao}', leaving airspace!`);
 				const tokens = getTokens(ac);
 				// this.log(tokens);
 				this.flowCards.acLeftTrigger
@@ -202,7 +202,9 @@ class Radar extends Homey.Device {
 			this.acList = newAcList;
 			return Promise.resolve(jsonData);
 		} catch (error) {
-			this.error(error);
+			if (error.code === 'ECONNRESET') {
+				this.error('adsbexchange service timeout');
+			} else this.error(error);
 			return error;
 		}
 	}
@@ -224,21 +226,20 @@ class Radar extends Homey.Device {
 				res.on('data', (chunk) => {
 					resBody += chunk;
 				});
-				res.on('end', () => {
+				res.once('end', () => {
 					res.body = resBody;
 					return resolve(res); // resolve the request
 				});
 			});
-			req.on('error', (e) => {
-				this.log(e);
-				reject(e);
-			});
-			req.setTimeout(900 * this.getSetting('pollingInterval'), () => {
-				req.abort();
-				reject(Error('Connection timeout'));
-			});
 			req.write(postData);
 			req.end();
+			req.setTimeout(900 * this.getSetting('pollingInterval'), () => {
+				req.abort();
+				// this.log('Connection timeout');
+			});
+			req.once('error', (e) => {
+				reject(e);
+			});
 		});
 	}
 

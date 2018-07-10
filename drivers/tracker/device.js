@@ -40,6 +40,7 @@ function toHHMM(secs) {
 function getDirection(bearing) {
 	let direction = '-';
 	if (Number.isNaN(bearing)) {
+		this.log(`bearing is not a number: ${bearing}`);
 		return direction;
 	}
 	if ((bearing >= 337.5) && (bearing < 22.5)) {
@@ -111,7 +112,7 @@ class Tracker extends Homey.Device {
 
 	// this method is called when the Device is inited
 	onInit() {
-		this.log(`device init ${this.getClass()} ${this.getData().id}}`);
+		this.log(`device init ${this.getClass()} ${this.getName()}}`);
 		clearInterval(this.intervalIdDevicePoll);	// if polling, stop polling
 		this.lastDv = null;
 		this.ac = undefined;
@@ -192,7 +193,7 @@ class Tracker extends Homey.Device {
 			};
 			const result = await this._makeHttpsRequest(options, '');
 			if (result.statusCode !== 200 || result.headers['content-type'] !== 'application/json') {
-				throw Error(`error: ${result.statusCode} ${result.body.substr(0, 20)}`);
+				return this.error(`adsbexchange service error: ${result.statusCode}`);
 			}
 			const jsonData = JSON.parse(result.body);
 			// this.log(util.inspect(jsonData, { depth: null, colors: true }));
@@ -204,13 +205,16 @@ class Tracker extends Homey.Device {
 			const ac = jsonData.acList[0];
 			return Promise.resolve(ac);
 		} catch (error) {
-			// this.error(error);
+			if (error.code === 'ECONNRESET') {
+				this.error('adsbexchange service timeout');
+			} else this.error(error);
 			return error;
 		}
 	}
 
 	getAcState(ac) {
 		try {
+			const acName = this.getName();
 			if (ac) {
 				// ac is present in airspace (transmitting)
 				if (!ac.Icao) {
@@ -220,34 +224,34 @@ class Tracker extends Homey.Device {
 				// this.log(tokens);
 				// aircraft entering airspace (started transmitting)
 				if (!this.ac) {
-					this.log(`${ac.Icao} started transmitting!`);
+					this.log(`${acName} icao: '${ac.Icao}', started transmitting loc: '${ac.Lat}/${ac.Long}'`);
 					this.flowCards.trackerOnlineTrigger
 						.trigger(this, tokens)
 						.catch(this.error);
 				}
 				// aircraft present in airspace (is transmitting)
-				// this.log(`${ac.Icao} is transmitting!`);
+				// this.log(`${acName} ${ac.Icao} is transmitting!`);
 				this.flowCards.trackerPresentTrigger
 					.trigger(this, tokens)
 					.catch(this.error);
 				this.setCapabilityValue('onoff', !ac.Gnd);
 				// aircraft went airborne
 				if (!ac.Gnd && this.ac.Gnd) {
-					this.log('aircraft just went airborne!');
+					this.log(`${acName} icao: '${ac.Icao}', just went airborne loc: '${ac.Lat}/${ac.Long}'`);
 					this.flowCards.wentAirborneTrigger
 						.trigger(this, tokens)
 						.catch(this.error);
 				}
 				// aircraft just landed
 				if (ac.Gnd && !this.ac.Gnd) {
-					this.log('aircraft just landed!');
+					this.log(`${acName} icao: '${ac.Icao}', just landed loc: '${ac.Lat}/${ac.Long}'`);
 					this.flowCards.justLandedTrigger
 						.trigger(this, tokens)
 						.catch(this.error);
 				}
 				return Promise.resolve(tokens);
 			} else if (this.ac) { // aircraft left airspace (stopped transmitting)
-				this.log(`${this.ac.Icao} stopped transmitting!`);
+				this.log(`${acName} icao: '${this.ac.Icao}', stopped transmitting loc: '${ac.Lat}/${ac.Long}'`);
 				this.setCapabilityValue('onoff', false);
 				// use last known tokens
 				const tokens = getTokens(this.ac);
@@ -273,7 +277,7 @@ class Tracker extends Homey.Device {
 				return locString;
 			}
 			if (!ac.Lat || !ac.Long) {	// no lat/long data available
-				this.log('no address');
+				// this.log('no address');
 				locString = '-';
 				return locString;
 			}
@@ -366,13 +370,15 @@ class Tracker extends Homey.Device {
 			};
 			const result = await this._makeHttpsRequest(options, '');
 			if (result.statusCode !== 200 || result.headers['content-type'] !== 'application/json; charset=UTF-8') {
-				throw Error(`error: ${result.statusCode} ${result.body.substr(0, 20)}`);
+				return this.error(`reverse geo service error: ${result.statusCode}`);
 			}
 			const jsonData = JSON.parse(result.body);
 			// this.log(util.inspect(jsonData, { depth: null, colors: true }));
 			return Promise.resolve(jsonData);
 		} catch (error) {
-			this.log(error);
+			if (error.code === 'ECONNRESET') {
+				this.error('reverse geo service timeout');
+			} else this.error(error);
 			return error;
 		}
 	}
@@ -384,21 +390,20 @@ class Tracker extends Homey.Device {
 				res.on('data', (chunk) => {
 					resBody += chunk;
 				});
-				res.on('end', () => {
+				res.once('end', () => {
 					res.body = resBody;
 					return resolve(res); // resolve the request
 				});
 			});
-			req.on('error', (e) => {
-				this.log(e);
-				reject(e);
-			});
-			req.setTimeout(900 * this.getSetting('pollingInterval'), () => {
-				req.abort();
-				reject(Error('Connection timeout'));
-			});
 			req.write(postData);
 			req.end();
+			req.setTimeout(900 * this.getSetting('pollingInterval'), () => {
+				req.abort();
+				// this.log('Connection timeout');
+			});
+			req.once('error', (e) => {
+				reject(e);
+			});
 		});
 	}
 

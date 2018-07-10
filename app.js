@@ -85,8 +85,14 @@ module.exports = VirtualRadarApp;
 
 // https://github.com/vradarserver/vrs
 
+// icao search:
 // https://global.adsbexchange.com/VirtualRadar/IcaoReport.htm?icao=485875
+// https://junzisun.com/adb/?q=4845BB
+// reg search:
 // https://global.adsbexchange.com/VirtualRadar/RegReport.htm?reg=PH-EXY
+// http://www.airport-data.com/aircraft/OH-LXD.html
+// call search:
+// https://uk.flightaware.com/live/flight/LZVAR
 
 //https://developers.google.com/maps/documentation/geocoding/start#ReverseGeocoding  >> Too expensive
 // https://wiki.openstreetmap.org/wiki/Nominatim >> free?
@@ -96,6 +102,10 @@ module.exports = VirtualRadarApp;
 // https://www.adsbexchange.com/data/
 // https://www.adsbexchange.com/datafields/
 // cirle center of NL: 52.228936, 5.321492 range:171km
+
+// display map:
+// http://maps.google.com/?q=-37.866963,144.980615
+// https://www.openstreetmap.org/?mlat=57.5529102&mlon=22.5148625#map=16/57.5709/22.4579
 
 /*
 For example, to query all aircraft between 0 and 100 km of the lat/long of Phoenix Sky Harbor Airport, use:
