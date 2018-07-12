@@ -4,7 +4,7 @@
 		"en": "Virtual Radar",
 		"nl": "Virtuele Radar"
 	},
-	"version": "2.0.1",
+	"version": "2.0.2",
 	"compatibility": ">=1.5.0",
 	"sdk": 2,
 	"description": {
@@ -31,6 +31,10 @@
 			}
 		}
 	},
+	"bugs": {
+		"url": "https://github.com/gruijter/com.gruijter.virtualradar/issues"
+	},
+	"athomForumDiscussionId": 5286,
 	"images": {
 		"large": "/assets/images/large.jpg",
 		"small": "/assets/images/small.jpg"
@@ -397,8 +401,8 @@
 				{
 					"type": "group",
 					"label": {
-						"en": "Include only selected filters",
-						"nl": "Alleen geselecteerde filters gebruiken"
+						"en": "Limit the results to the selected filters",
+						"nl": "Beperk de resultaten tot de aangevinkte filters"
 					},
 					"children": [
 						{
@@ -426,7 +430,11 @@
 								"en": "On ground",
 								"nl": "Aan de grond"
 							},
-							"value": false
+							"value": false,
+							"hint": {
+								"en": "If checked, only planes on the ground will be included",
+								"nl": "Aangevinkt: alleen vliegtuigen op de grond worden inbegrepen"
+							}
 						},
 						{
 							"id": "onlyAir",
@@ -435,7 +443,11 @@
 								"en": "In air",
 								"nl": "In de lucht"
 							},
-							"value": false
+							"value": false,
+							"hint": {
+								"en": "If checked, only planes not on the ground will be included",
+								"nl": "Aangevinkt: alleen vliegtuigen niet op de grond worden inbegrepen"
+							}
 						},
 						{
 							"id": "sqk",

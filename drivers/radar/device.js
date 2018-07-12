@@ -82,12 +82,12 @@ class Radar extends Homey.Device {
 
 	// this method is called when the Device is added
 	onAdded() {
-		this.log(`scanner added: ${this.getData().id} ${this.getName()}`);
+		this.log(`radar added: ${this.getData().id} ${this.getName()}`);
 	}
 
 	// this method is called when the Device is deleted
 	onDeleted() {
-		this.log(`scanner deleted: ${this.getData().id} ${this.getName()}`);
+		this.log(`radar deleted: ${this.getData().id} ${this.getName()}`);
 		clearInterval(this.intervalIdDevicePoll);
 	}
 
@@ -95,7 +95,7 @@ class Radar extends Homey.Device {
 	onSettings(newSettingsObj, oldSettingsObj, changedKeysArr, callback) {
 		// first stop polling the device, then start init after short delay
 		clearInterval(this.intervalIdDevicePoll);
-		this.log('scanner device settings changed');
+		this.log('radar device settings changed');
 		this.setAvailable()
 			.catch(this.error);
 		setTimeout(() => {

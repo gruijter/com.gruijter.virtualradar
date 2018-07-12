@@ -20,6 +20,7 @@ along with com.gruijter.virtualradar.  If not, see <http://www.gnu.org/licenses/
 'use strict';
 
 const Homey = require('homey');
+const crypto = require('crypto');
 // const util = require('util');
 
 class TrackerDriver extends Homey.Driver {
@@ -30,7 +31,7 @@ class TrackerDriver extends Homey.Driver {
 	}
 
 	onPairListDevices(data, callback) {
-		const id = `Tracker_${(this.getDevices().length + 1)}`;
+		const id = `Radar_${crypto.randomBytes(4).toString('hex')}`; // e.g Radar_f9b327e7
 		const devices = [
 			{
 				name: id,
