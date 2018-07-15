@@ -84,25 +84,25 @@ const speciesList = {	// needs translation via localization?
 
 function getTokens(ac) {
 	const tokens = {
-		dst: ac.Dst, // The distance to the aircraft in kilometres.
-		brng: ac.Brng, // The bearing from the browser to the aircraft clockwise from 0° north
-		alt: Math.round(ac.GAlt * 0.3048), // The altitude in feet adjusted for local air pressure. GAlt * 0.3048 = m
-		spd: Math.round(ac.Spd * 1.852), // The ground speed in knots. Spd * 1.852 = km/h
-		vsi: Math.round(ac.Vsi * 0.3048), // Vertical speed in feet per minute. Vsi * 0.3048 = m/min
+		dst: ac.Dst || 0, // The distance to the aircraft in kilometres.
+		brng: ac.Brng || 0, // The bearing from the browser to the aircraft clockwise from 0° north
+		alt: Math.round((ac.GAlt || 0) * 0.3048), // The altitude in feet adjusted for local air pressure. GAlt * 0.3048 = m
+		spd: Math.round((ac.Spd || 0) * 1.852), // The ground speed in knots. Spd * 1.852 = km/h
+		vsi: Math.round((ac.Vsi || 0) * 0.3048), // Vertical speed in feet per minute. Vsi * 0.3048 = m/min
 		// None: 0, LandPlane: 1, SeaPlane: 2, Amphibian: 3, Helicopter: 4, Gyrocopter: 5, Tiltwing: 6, GroundVehicle: 7, Tower: 8
 		gnd: ac.Gnd, // true or false
 		mil: ac.Mil, // True if the aircraft appears to be operated by the military.
 		help: ac.Help, // True if the aircraft is transmitting an emergency squawk
-		species: speciesList[ac.Species], // number 	The species of the aircraft (helicopter, jet etc.) - see enums.js for values.
+		species: speciesList[ac.Species] || '-', // number 	The species of the aircraft (helicopter, jet etc.) - see enums.js for values.
 		// id: ac.Id,
-		icao: ac.Icao,
-		reg: ac.Reg, // The registration.
-		call: ac.Call, // The callsign
+		icao: ac.Icao || '-',
+		reg: ac.Reg || '-', // The registration.
+		call: ac.Call || '-', // The callsign
 		// type: ac.Type, // The aircraft model's ICAO type code.
-		mdl: ac.Mdl,	// A description of the aircraft's model. Usually also includes the manufacturer's name.
-		op: ac.Op, // The name of the aircraft's operator.
-		from: ac.From, // The code and name of the departure airport.
-		to: ac.To, // The code and name of the arrival airport.
+		mdl: ac.Mdl || '-',	// A description of the aircraft's model. Usually also includes the manufacturer's name.
+		op: ac.Op || '-', // The name of the aircraft's operator.
+		from: ac.From || '-', // The code and name of the departure airport.
+		to: ac.To || '-', // The code and name of the arrival airport.
 		// PosTime: ac.PosTime, // The time (at UTC in JavaScript ticks) that the position was last reported by the aircraft.
 	};
 	return tokens;
