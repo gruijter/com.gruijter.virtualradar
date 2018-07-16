@@ -90,9 +90,9 @@ function getTokens(ac) {
 		spd: Math.round((ac.Spd || 0) * 1.852), // The ground speed in knots. Spd * 1.852 = km/h
 		vsi: Math.round((ac.Vsi || 0) * 0.3048), // Vertical speed in feet per minute. Vsi * 0.3048 = m/min
 		// None: 0, LandPlane: 1, SeaPlane: 2, Amphibian: 3, Helicopter: 4, Gyrocopter: 5, Tiltwing: 6, GroundVehicle: 7, Tower: 8
-		gnd: ac.Gnd, // true or false
-		mil: ac.Mil, // True if the aircraft appears to be operated by the military.
-		help: ac.Help, // True if the aircraft is transmitting an emergency squawk
+		gnd: ac.Gnd || false, // true or false
+		mil: ac.Mil || false, // True if the aircraft appears to be operated by the military.
+		help: ac.Help || false, // True if the aircraft is transmitting an emergency squawk
 		species: speciesList[ac.Species] || '-', // number 	The species of the aircraft (helicopter, jet etc.) - see enums.js for values.
 		// id: ac.Id,
 		icao: ac.Icao || '-',
