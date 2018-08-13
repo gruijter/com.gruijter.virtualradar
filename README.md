@@ -97,6 +97,7 @@ This app uses:
 Version changelog
 
 ```
+v2.0.4	2018.08.12 reduced memory usage
 v2.0.3	2018.07.15 fix flow cards with undefined tokens
 v2.0.2	2018.07.12 fix re-adding devices after removal of device.
 v2.0.1	2018.07.08 Http optimizations. Added html links in logs.

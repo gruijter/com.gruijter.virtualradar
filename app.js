@@ -44,6 +44,10 @@ class VirtualRadarApp extends Homey.App {
 			.on('memwarn', () => {
 				this.log('memwarn!');
 			});
+		// do garbage collection every 10 minutes
+		this.intervalIdGc = setInterval(() => {
+			global.gc();
+		}, 1000 * 60 * 10);
 	}
 
 	//  stuff for frontend API

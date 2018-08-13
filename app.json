@@ -4,7 +4,7 @@
 		"en": "Virtual Radar",
 		"nl": "Virtuele Radar"
 	},
-	"version": "2.0.3",
+	"version": "2.0.4",
 	"compatibility": ">=1.5.0",
 	"sdk": 2,
 	"description": {
