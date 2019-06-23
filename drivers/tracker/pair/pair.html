@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+<head>
+	<link rel="stylesheet" type="text/css" href="styles.css" />
+	<script type="text/javascript" src="/manager/webserver/assets/js/jquery.js"></script>
+	<script type="text/javascript" src="pair.js" data-origin="pair"></script>
+</head>
+<body>
+	<div class="setting">
+		<p data-i18n="pair.instructions" class="instructions">Instructions</p>
+
+		<label class="settings-item-description" data-i18n="pair.radarSelection">Select radar type</label>
+		<div class="settings-itemgroup">
+			<select id="radarSelection" onchange="radarSelected()">
+				<option value="openSky" data-i18n="pair.openSky" selected>openSky</option>
+				<option value="adsbExchangeFeeder" data-i18n="pair.adsbExchangeFeeder">adsbExchangeFeeder</option>
+				<!-- <option value="adsbExchangePaid" data-i18n="pair.adsbExchangePaid">adsbExchangePaid</option> -->
+				<!-- <option value="Generic" data-i18n="pair.genericMeter">Generic</option> -->
+			</select>
+		</div>
+
+		<!-- <label class="settings-item-description" data-i18n="pair.username">username</label>
+		<div class="settings-itemgroup">
+			<input id="username" type="text" value="">
+		</div> -->
+<!-- 
+		<label class="settings-item-description" id="passwordLabel" data-i18n="pair.password">password</label>
+		<div class="settings-itemgroup">
+			<input id="password" type="text" value="">
+		</div> -->
+
+		<label class="settings-item-description" id="APIKeyLabel" data-i18n="pair.APIKey">key</label>
+		<div class="settings-itemgroup">
+			<input id="APIKey" type="text" value="">
+		</div>
+
+		<label class="settings-item-description" data-i18n="pair.trackIDSelection">Select tracking id type</label>
+		<div class="settings-itemgroup">
+			<select id="trackIDSelection" >
+				<option value="ico" data-i18n="pair.ICAO" selected>ICAO</option>
+				<option value="reg" data-i18n="pair.reg" >Registration</option>
+				<option value="call" data-i18n="pair.call" >Call Sign</option>
+			</select>
+		</div>
+
+		<label class="settings-item-description" id="trackIDLabel" data-i18n="pair.trackID">Track ID</label>
+		<div class="settings-itemgroup">
+			<input id="trackID" type="text" value="">
+		</div>
+
+		<label class="settings-item-description" data-i18n="pair.testSettings">Start test</label>
+		<button id="runTest" class="btn" onclick="testSettings()" data-i18n="pair.testSettings">Start Test</button>
+	</div>
+</body>
+</html>

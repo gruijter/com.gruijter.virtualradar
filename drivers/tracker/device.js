@@ -1,5 +1,6 @@
+/* eslint-disable prefer-destructuring */
 /*
-Copyright 2018, Robin de Gruijter (gruijter@hotmail.com)
+Copyright 2018, 2019, Robin de Gruijter (gruijter@hotmail.com)
 
 This file is part of com.gruijter.virtualradar.
 
@@ -20,22 +21,22 @@ along with com.gruijter.virtualradar.  If not, see <http://www.gnu.org/licenses/
 'use strict';
 
 const Homey = require('homey');
-const qs = require('querystring');
-const https = require('https');
+const Radar = require('../../radar');
+const geo = require('../../reverseGeo');
 // const util = require('util');
 
-function toHHMM(secs) {
-	const secNum = parseInt(secs, 10);
-	const hours = Math.floor(secNum / 3600);
-	const minutes = Math.floor((secNum - (hours * 3600)) / 60);
-	// const seconds = secNum - (hours * 3600) - (minutes * 60);
-	let HH = `${hours}`;
-	let MM = `${minutes}`;
-	if (hours < 10) { HH = `0${hours}`; }
-	if (minutes < 10) { MM = `0${minutes}`; }
-	// if (seconds < 10) { SS = `0${seconds}`; }
-	return `${HH}:${MM}`;
-}
+// function toHHMM(secs) {
+// 	const secNum = parseInt(secs, 10);
+// 	const hours = Math.floor(secNum / 3600);
+// 	const minutes = Math.floor((secNum - (hours * 3600)) / 60);
+// 	// const seconds = secNum - (hours * 3600) - (minutes * 60);
+// 	let HH = `${hours}`;
+// 	let MM = `${minutes}`;
+// 	if (hours < 10) { HH = `0${hours}`; }
+// 	if (minutes < 10) { MM = `0${minutes}`; }
+// 	// if (seconds < 10) { SS = `0${seconds}`; }
+// 	return `${HH}:${MM}`;
+// }
 
 function getDirection(bearing) {
 	let direction = '-';
@@ -70,40 +71,30 @@ function getDirection(bearing) {
 	return direction;
 }
 
-const speciesList = {	// needs translation via localization?
-	0: 'unknown',	// Onbekend
-	1: 'land', // Luchtvaartuig
-	2: 'sea', // Watervliegtuig
-	3: 'amphibian', // Amfibisch
-	4: 'helicopter', // Helicopter
-	5: 'gyrocopter', // Gyrocopter
-	6: 'tiltwing', // Tiltwing
-	7: 'vehicle', // Grond voertuig
-	8: 'tower', // Toren
-};
-
 function getTokens(ac) {
 	const tokens = {
-		dst: ac.Dst || 0, // The distance to the aircraft in kilometres.
-		brng: ac.Brng || 0, // The bearing from the browser to the aircraft clockwise from 0° north
-		alt: Math.round((ac.GAlt || 0) * 0.3048), // The altitude in feet adjusted for local air pressure. GAlt * 0.3048 = m
-		spd: Math.round((ac.Spd || 0) * 1.852), // The ground speed in knots. Spd * 1.852 = km/h
-		vsi: Math.round((ac.Vsi || 0) * 0.3048), // Vertical speed in feet per minute. Vsi * 0.3048 = m/min
-		// None: 0, LandPlane: 1, SeaPlane: 2, Amphibian: 3, Helicopter: 4, Gyrocopter: 5, Tiltwing: 6, GroundVehicle: 7, Tower: 8
-		gnd: ac.Gnd || false, // true or false
-		mil: ac.Mil || false, // True if the aircraft appears to be operated by the military.
-		help: ac.Help || false, // True if the aircraft is transmitting an emergency squawk
-		species: speciesList[ac.Species] || '-', // number 	The species of the aircraft (helicopter, jet etc.) - see enums.js for values.
-		// id: ac.Id,
-		icao: ac.Icao || '-',
-		reg: ac.Reg || '-', // The registration.
-		call: ac.Call || '-', // The callsign
-		// type: ac.Type, // The aircraft model's ICAO type code.
-		mdl: ac.Mdl || '-',	// A description of the aircraft's model. Usually also includes the manufacturer's name.
-		op: ac.Op || '-', // The name of the aircraft's operator.
-		from: ac.From || '-', // The code and name of the departure airport.
-		to: ac.To || '-', // The code and name of the arrival airport.
-		// PosTime: ac.PosTime, // The time (at UTC in JavaScript ticks) that the position was last reported by the aircraft.
+		lat: ac.lat,
+		lon: ac.lon,
+		dst: ac.dst / 1000 || 0, // The distance to the aircraft in kilometres.
+		brng: ac.brng || 0, // The bearing from the browser to the aircraft clockwise from 0° north
+		alt: ac.gAlt || 0, // Geometric altitude in meters. Can be null.
+		spd: ac.spd || 0, // Velocity over ground in m/s. Can be null.
+		vsi: ac.vsi || 0, // Vertical rate in m/s.
+		gnd: ac.gnd || false, // true or false
+		sqk: ac.sqk || '',
+		help: ac.sqk === '7500' || ac.sqk === '7600' || ac.sqk === '7700', // True if the aircraft is transmitting an emergency squawk
+		// 7500 = Hijack code, 7600 = Lost Communications, radio problem, 7700 = Emergency
+		icao: ac.icao || '-',
+		call: ac.call || '-', // The callsign
+		oc: ac.oc || '-', // The origin country
+		// posTime: ac.posTime, // Unix timestamp (seconds) for the last position update
+		from: ac.from || '-', // the departure airport
+		to: ac.to || '-', // the destination airport
+		op: ac.op || '-', // the operator
+		mdl: ac.mdl || '-', // the aircraft model (and make?)
+		reg: ac.reg || '-', // the aircraft registration
+		// species: ac.species || '-', // the aircraft species
+		mil: ac.mil || false, // true if known military aircraft
 	};
 	return tokens;
 }
@@ -114,26 +105,26 @@ class Tracker extends Homey.Device {
 	onInit() {
 		this.log(`device init ${this.getClass()} ${this.getName()}}`);
 		clearInterval(this.intervalIdDevicePoll);	// if polling, stop polling
-		this.lastDv = null;
-		this.ac = undefined;
+		this.settings = this.getSettings();
+		this.radar = new Radar[this.settings.service](this.settings);
+		this.ac = {};
 		this.flowCards = {};
 		this.registerFlowCards();
 		this.intervalIdDevicePoll = setInterval(async () => {
 			try {
-				// this.log('polling now...');
-				this.trackAc();
+				this.scan();
 			} catch (error) { this.log('intervalIdDevicePoll error', error); }
 		}, 1000 * this.getSetting('pollingInterval'));
 	}
 
 	// this method is called when the Device is added
 	onAdded() {
-		this.log(`tracker added: ${this.getData().id} ${this.getName()}`);
+		this.log(`tracker added: ${this.getData().id}`);
 	}
 
 	// this method is called when the Device is deleted
 	onDeleted() {
-		this.log(`tracker deleted: ${this.getData().id} ${this.getName()}`);
+		this.log(`tracker deleted: ${this.getData().id}`);
 		clearInterval(this.intervalIdDevicePoll);
 	}
 
@@ -150,81 +141,44 @@ class Tracker extends Homey.Device {
 		callback(null, true);
 	}
 
-	async trackAc() {
+	setCapability(capability, value) {
+		if (this.hasCapability(capability)) {
+			this.setCapabilityValue(capability, value)
+				.catch((error) => {
+					this.log(error, capability, value);
+				});
+		}
+	}
+
+	async scan() {
 		try {
-			const ac = await this.getAcData();
-			this.getAcState(ac);	// flowcards and stuff
-			const locString = await this.getAclocString(ac); // reverse ReverseGeocoding
-			this.setAcCapabilities(ac, locString);
-			this.ac = ac;
-			return ac;
+			const opts = this.settings;
+			const acList = await this.radar.getAc(opts);
+			const ac = acList[0];
+			if (ac) {
+				ac.locString = await geo.getAclocString(ac); // reverse ReverseGeocoding
+			}
+			this.setHomeyAcState(ac);	// flowcards and stuff
+			// const locString = await geo.getAclocString(ac); // reverse ReverseGeocoding
+			// console.log(locString);
+			this.setAcCapabilities(ac);
+			this.ac = ac || this.ac;
 		} catch (error) {
 			this.error(error);
-			return error;
 		}
 	}
 
-	async getAcData() {
-		try {
-			const settings = this.getSettings();
-			const query = {
-				// ldv: this.lastDv,	 // The lastDv value from the last aircraft list fetched. Omit on first time fetching an aircraft list.
-				lat: settings.lat,	// : 51.8858,	// The decimal latitude to measure distances and calculate bearings from
-				lng: settings.lng, // : 4.5572,	// The decimal longitude to measure distances and calculate bearings from
-			};
-			if (settings.ico !== '') {
-				query.fIcoQ = settings.ico; // ICAO equals
-			}
-			if (settings.reg !== '') {
-				query.fRegQ = settings.reg; // Registration equals
-			}
-			if (settings.call !== '') {
-				query.fCallQ = settings.call; // Callsign equals
-			}
-			const headers = {
-				'Content-Length': 0,
-			};
-			const options = {
-				hostname: 'public-api.adsbexchange.com',
-				path: `/VirtualRadar/AircraftList.json?${qs.stringify(query)}`,
-				headers,
-				'User-Agent': 'Homey VirtualRadar',
-				method: 'GET',
-			};
-			const result = await this._makeHttpsRequest(options, '');
-			if (result.statusCode !== 200 || result.headers['content-type'] !== 'application/json') {
-				return this.error(`adsbexchange service error: ${result.statusCode}`);
-			}
-			const jsonData = JSON.parse(result.body);
-			// this.log(util.inspect(jsonData, { depth: null, colors: true }));
-			if (jsonData.lastDv === undefined) {
-				// this.error(result.body);
-				throw Error('Invalid response from API');
-			}
-			this.lastDv = jsonData.lastDv;
-			const ac = jsonData.acList[0];
-			return Promise.resolve(ac);
-		} catch (error) {
-			if (error.code === 'ECONNRESET') {
-				this.error('adsbexchange service timeout');
-			} else this.error(error);
-			return error;
-		}
-	}
-
-	getAcState(ac) {
+	setHomeyAcState(ac) {
 		try {
 			const acName = this.getName();
+			// ac is present in airspace (transmitting)
 			if (ac) {
-				// ac is present in airspace (transmitting)
-				if (!ac.Icao) {
-					return undefined;
-				}
+				if (!ac.icao) return; // why do I need this?
 				const tokens = getTokens(ac);
 				// this.log(tokens);
 				// aircraft entering airspace (started transmitting)
 				if (!this.ac) {
-					this.log(`${acName} icao: '${ac.Icao}', started transmitting loc: '${ac.Lat}/${ac.Long}'`);
+					this.log(`${acName} icao: '${ac.icao}', started transmitting loc: '${ac.lat}/${ac.lon}'`);
 					this.flowCards.trackerOnlineTrigger
 						.trigger(this, tokens)
 						.catch(this.error);
@@ -234,102 +188,69 @@ class Tracker extends Homey.Device {
 				this.flowCards.trackerPresentTrigger
 					.trigger(this, tokens)
 					.catch(this.error);
-				this.setCapabilityValue('onoff', !ac.Gnd);
+				this.setCapability('onoff', !ac.gnd);
 				// aircraft went airborne
-				if (!ac.Gnd && this.ac.Gnd) {
-					this.log(`${acName} icao: '${ac.Icao}', just went airborne loc: '${ac.Lat}/${ac.Long}'`);
+				if (!ac.gnd && this.ac.gnd) {
+					this.log(`${acName} icao: '${ac.icao}', just went airborne loc: '${ac.lat}/${ac.lon}'`);
 					this.flowCards.wentAirborneTrigger
 						.trigger(this, tokens)
 						.catch(this.error);
 				}
 				// aircraft just landed
-				if (ac.Gnd && !this.ac.Gnd) {
-					this.log(`${acName} icao: '${ac.Icao}', just landed loc: '${ac.Lat}/${ac.Long}'`);
+				if (ac.gnd && !this.ac.gnd) {
+					this.log(`${acName} icao: '${ac.icao}', just landed loc: '${ac.lat}/${ac.lon}'`);
 					this.flowCards.justLandedTrigger
 						.trigger(this, tokens)
 						.catch(this.error);
 				}
-				return Promise.resolve(tokens);
-			} else if (this.ac) { // aircraft left airspace (stopped transmitting)
-				this.log(`${acName} icao: '${this.ac.Icao}', stopped transmitting loc: '${ac.Lat}/${ac.Long}'`);
-				this.setCapabilityValue('onoff', false);
+				return;
+			}
+			// aircraft left airspace (stopped transmitting)
+			if (this.ac && this.ac.icao) {
+				this.log(`${acName} icao: '${this.ac.icao}', stopped transmitting loc: '${this.ac.lat}/${this.ac.lon}'`);
+				this.setCapability('onoff', false);
 				// use last known tokens
 				const tokens = getTokens(this.ac);
 				this.flowCards.trackerOfflineTrigger
 					.trigger(this, tokens)
 					.catch(this.error);
 			} else {	// there is no aircraft detected
-				this.setCapabilityValue('onoff', false);
+				this.setCapability('onoff', false);
 			}
-			this.ac = ac;
-			return ac;
-		} catch (error) {
-			// this.error(error);
-			return error;
-		}
-	}
-
-	async getAclocString(ac) {
-		try {
-			let locString;
-			if (!ac) {	// no aircraft data available
-				locString = '-';
-				return locString;
-			}
-			if (!ac.Lat || !ac.Long) {	// no lat/long data available
-				// this.log('no address');
-				locString = '-';
-				return locString;
-			}
-			const loc = await this.reverseGeo(ac.Lat, ac.Long);
-			if (!loc.address) {	// no reverse geolocation available
-				this.log('no address');
-				locString = 'Intl. Water';	// aircraft over sea maybe?
-				return locString;
-			}
-			const countryCode = loc.address.country_code.toUpperCase();
-			let local = loc.address.state;
-			if ((ac.GAlt * 0.3048) < 2000) {
-				local = loc.address.city || loc.address.county || loc.address.state_district || local;
-			}
-			if ((ac.GAlt * 0.3048) < 500) {
-				local = loc.address.village || loc.address.town || local;
-			}
-			if ((ac.GAlt * 0.3048) < 200) {
-				local = loc.address.suburb || local;
-			}
-			locString = `${countryCode} ${local}`;
-			return Promise.resolve(locString);
-		} catch (error) {
-			// this.error(error);
-			return error;
-		}
-	}
-
-	setAcCapabilities(ac, locString) {
-		try {
-			if (!ac) {	// no aircraft data available
-				this.setCapabilityValue('onoff', false);
-				// this.setCapabilityValue('loc', locString);
-				this.setCapabilityValue('brng', '-');
-				this.setCapabilityValue('alt', 0);
-				this.setCapabilityValue('spd', 0);
-				this.setCapabilityValue('to', '-');
-				this.setCapabilityValue('tsecs', '-');
-				return;
-			}
-			// this.setCapabilityValue('onoff', false);
-			this.setCapabilityValue('loc', locString);
-			this.setCapabilityValue('brng', getDirection(ac.Brng));
-			this.setCapabilityValue('alt', Math.round(ac.GAlt * 0.3048));
-			this.setCapabilityValue('spd', Math.round(ac.Spd * 1.852));
-			this.setCapabilityValue('to', ac.To || '-');
-			this.setCapabilityValue('tsecs', toHHMM(ac.TSecs));
+			return;
 		} catch (error) {
 			this.error(error);
 		}
 	}
 
+	setAcCapabilities(ac) {
+		try {
+			if (!ac) {	// no aircraft data available
+				this.setCapability('onoff', false);
+				this.setCapability('loc', this.ac.locString || '-');
+				this.setCapability('brng', '-');
+				this.setCapability('alt', 0);
+				this.setCapability('spd', 0);
+				this.setCapability('to', '-');
+				this.setCapability('dst', 0);
+				this.setCapability('tsecs', '-');
+				return;
+			}
+			const alt = Math.round(ac.gAlt || ac.bAlt || 0);
+			const dst = Math.round(ac.dst / 100) / 10;
+			const dir = getDirection(ac.brng);
+			this.setCapability('onoff', true);
+			this.setCapability('loc', ac.locString || '-');
+			this.setCapability('brng', dir);
+			this.setCapability('alt', alt);
+			this.setCapability('spd', ac.spd);
+			this.setCapability('to', ac.to || '-');
+			this.setCapability('dst', dst || 0);
+			// this.setCapability('tsecs', toHHMM(ac.TSecs));
+		} catch (error) {
+			this.error(error);
+		}
+	}
 
 	registerFlowCards() {
 	// register trigger flow cards
@@ -343,68 +264,6 @@ class Tracker extends Homey.Device {
 			.register();
 		this.flowCards.justLandedTrigger = new Homey.FlowCardTriggerDevice('just_landed')
 			.register();
-	}
-
-	async reverseGeo(lat, lon) {
-		try {
-			const query = {
-				format: 'json', // [xml|json|jsonv2]
-				// osm_type: 'N',	// [N|W|R] node / way / relation, preferred over lat,lon
-				lat,	// The location to generate an address for
-				lon,	// The location to generate an address for
-				zoom: 18, // [0-18]	Level of detail required where 0 is country and 18 is house/building
-				addressdetails: 1,	// [0|1] Include a breakdown of the address into elements
-				email: 'gruijter@hotmail.com', // <valid email address> only used to contact you in the event of a problem, see Usage Policy
-				// extratags: 1,	// [0|1] Include additional information in the result if available, e.g. wikipedia link, opening hours.
-				// namedetails: 1,	// [0|1] Include a list of alternative names in the results. language variants, references, operator and brand
-			};
-			const headers = {
-				'Content-Length': 0,
-			};
-			const options = {
-				hostname: 'nominatim.openstreetmap.org',
-				path: `/reverse?${qs.stringify(query)}`,
-				headers,
-				'User-Agent': 'Homey VirtualRadar',
-				method: 'GET',
-			};
-			const result = await this._makeHttpsRequest(options, '');
-			if (result.statusCode !== 200 || result.headers['content-type'] !== 'application/json; charset=UTF-8') {
-				return this.error(`reverse geo service error: ${result.statusCode}`);
-			}
-			const jsonData = JSON.parse(result.body);
-			// this.log(util.inspect(jsonData, { depth: null, colors: true }));
-			return Promise.resolve(jsonData);
-		} catch (error) {
-			if (error.code === 'ECONNRESET') {
-				this.error('reverse geo service timeout');
-			} else this.error(error);
-			return error;
-		}
-	}
-
-	_makeHttpsRequest(options, postData) {
-		return new Promise((resolve, reject) => {
-			const req = https.request(options, (res) => {
-				let resBody = '';
-				res.on('data', (chunk) => {
-					resBody += chunk;
-				});
-				res.once('end', () => {
-					res.body = resBody;
-					return resolve(res); // resolve the request
-				});
-			});
-			req.write(postData);
-			req.end();
-			req.setTimeout(900 * this.getSetting('pollingInterval'), () => {
-				req.abort();
-				// this.log('Connection timeout');
-			});
-			req.once('error', (e) => {
-				reject(e);
-			});
-		});
 	}
 
 }

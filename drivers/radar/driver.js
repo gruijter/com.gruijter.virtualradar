@@ -1,5 +1,6 @@
+/* eslint-disable prefer-destructuring */
 /*
-Copyright 2018, Robin de Gruijter (gruijter@hotmail.com)
+Copyright 2018, 2019, Robin de Gruijter (gruijter@hotmail.com)
 
 This file is part of com.gruijter.virtualradar.
 
@@ -28,43 +29,60 @@ class RadarDriver extends Homey.Driver {
 	onInit() {
 		this.log('ScannerDriver onInit');
 		// init some variables
+		this.radarServices = {
+			openSky: {
+				name: 'openSky',
+				capabilities: ['ac_number', 'dst', 'alt', 'oc'],
+				APIKey: false,
+			},
+			adsbExchangeFeeder: {
+				name: 'adsbExchangeFeeder',
+				capabilities: ['ac_number', 'to', 'op', 'mdl', 'dst', 'alt', 'oc'],
+				APIKey: true,
+			},
+			adsbExchangePaid: {
+				name: 'adsbExchangePaid',
+				capabilities: ['ac_number', 'to', 'op', 'mdl', 'dst', 'alt', 'oc'],
+			},
+		};
 	}
 
-	onPairListDevices(data, callback) {
-		const id = `Radar_${crypto.randomBytes(4).toString('hex')}`; // e.g Radar_f9b327e7
-		const devices = [
-			{
-				name: id,
-				data: { id },
-				settings: {
-					pollingInterval: 20, // seconds
-					lat: Homey.ManagerGeolocation.getLatitude(),
-					lng: Homey.ManagerGeolocation.getLongitude(),
-					altLm: 0, //	Altitude in meter lower limit
-					altUm: 12000, //	Altitude in meter upper limit
-					// dstL: 0, //	Distance in kilometres, lower limit
-					dstU: 5, //	Distance in kilometres, Upper limit
-					mil: false,
-					int: false,
-					sqk: '0000',
-					// filters for after recieving ac list
-					unknown: true,
-					land: true,
-					sea: true,
-					amphibian: true,
-					helicopter: true,
-					gyrocopter: true,
-					tiltwing: true,
-					vehicle: true,
-					tower: true,
-					onlyGnd: false,
-					onlyAir: true,
-				},
-			},
-		];
-		this.log(devices);
-		callback(null, devices);
+	onPair(socket) {
+		socket.on('validate', async (data, callback) => {
+			try {
+				this.log('save button pressed in frontend');
+				const service = data.radarSelection || 'openSky';
+				const username = data.username;
+				const password = data.password;
+				const APIKey = data.APIKey;
+				const id = `${this.radarServices[service].name}_${crypto.randomBytes(3).toString('hex')}`; // e.g openSky_f9b327
+				const device = {
+					name: id,
+					data: { id },
+					settings: {
+						pollingInterval: 20, // seconds
+						lat: Math.round(Homey.ManagerGeolocation.getLatitude() * 100000000) / 100000000,
+						lon: Math.round(Homey.ManagerGeolocation.getLongitude() * 100000000) / 100000000,
+						dst: 5, //	Distance in kilometres,
+						int: false,
+						sqk: '',
+						onlyGnd: false,
+						onlyAir: true,
+						service: this.radarServices[service].name,
+						username,
+						password,
+						APIKey,
+					},
+					capabilities: this.radarServices[service].capabilities,
+				};
+				callback(null, JSON.stringify(device)); // report success to frontend
+			}	catch (error) {
+				this.error('Pair error', error);
+				callback(error);
+			}
+		});
 	}
+
 
 }
 

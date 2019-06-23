@@ -1,7 +1,7 @@
 # ADS-B Virtual Radar #
 
 Turn Homey into an aircraft radar or tracker. The radar information is based on
-ADS-B tracker info from adsbexchange.com
+ADS-B tracker info from opensky-network.org and from adsbexchange.com
 
 * Ever wanted to know where that plane over your house is heading?
 * Do you want to track the local Police Helicopter?
@@ -38,7 +38,9 @@ destination airport and track time:
 ![image][flow-cards-image]
 ![image][flow-cards-image2]
 
-With the flow cards you get the following tokens:
+With the flow cards you get the following tokens, depending on the selected data source.
+OpenSky is free to use, but has limited information. ADSB-Exchange has more information, but
+requires an API key that you can get for free when you feed data from your own ADSB-receiver. 
 
 - dist: The distance to the aircraft in kilometres.
 - bearing: The bearing from the radar to the aircraft clockwise from 0° north
@@ -90,23 +92,15 @@ If you really like the app you can buy me a beer.
 
 This app uses:
 * ADSBexchange for virtual radar data: https://www.adsbexchange.com/legal-and-privacy/
+* OpenSky for virtual radar data: https://opensky-network.org/about/terms-of-use
 * OpenStreetMap for reverse geocoding: https://osm.org/copyright
 
 ===============================================================================
 
-Version changelog
+Version changelog: [changelog.txt]
 
-```
-v2.0.4	2018.08.12 reduced memory usage
-v2.0.3	2018.07.15 fix flow cards with undefined tokens
-v2.0.2	2018.07.12 fix re-adding devices after removal of device.
-v2.0.1	2018.07.08 Http optimizations. Added html links in logs.
-v2.0.0	2018.06.23 Added emergency filter and help token. Added tracker driver.
-v0.0.8	2018.06.17 Initial release
 
-```
-
-[forum]: https://forum.athom.com/discussion/5286
+[forum]: https://community.athom.com/t/14605
 [pp-donate-link]: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VB7VKG5Y28M6N
 [pp-donate-image]: https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif
 [mobile-card-image1]: https://forum.athom.com/uploads/editor/15/ihdfxcz99gqi.png
@@ -120,3 +114,5 @@ v0.0.8	2018.06.17 Initial release
 [mobile-card-image4]: https://forum.athom.com/uploads/editor/hc/i0j0jp9ws0s8.png
 [flow-cards-image2]: https://forum.athom.com/uploads/editor/yo/jbfshkqiizzo.png
 [tracker-setup-image]: https://forum.athom.com/uploads/editor/n1/0hcbmperxz5j.png
+
+[changelog.txt]: https://github.com/gruijter/com.gruijter.virtualradar/blob/master/changelog.txt

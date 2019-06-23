@@ -4,7 +4,7 @@
 		"en": "Virtual Radar",
 		"nl": "Virtuele Radar"
 	},
-	"version": "2.0.4",
+	"version": "3.0.0",
 	"compatibility": ">=1.5.0",
 	"sdk": 2,
 	"description": {
@@ -12,8 +12,8 @@
 		"nl": "Maak van Homey een luchtruim radar gebaseerd op ADS-B tracker info"
 	},
 	"tags": {
-		"en": [ "ADS-B virtual radar", "tracking", "airplane", "helicopter" ],
-		"en": [ "ADS-B virtual radar", "tracking", "localiseren", "vliegtuig", "helicopter" ]
+		"en": [ "ADS-B", "radar", "tracking", "tracker", "airplane", "helicopter" ],
+		"nl": [ "ADS-B", "radar", "tracking", "tracker", "localiseren", "vliegtuig", "helicopter" ]
 	},
 	"category": [
 		"localization", "internet", "tools"
@@ -34,7 +34,7 @@
 	"bugs": {
 		"url": "https://github.com/gruijter/com.gruijter.virtualradar/issues"
 	},
-	"athomForumDiscussionId": 5286,
+	"athomForumDiscussionId": 14605,
 	"images": {
 		"large": "/assets/images/large.jpg",
 		"small": "/assets/images/small.jpg"
@@ -54,7 +54,9 @@
 					"nl": "Vliegtuig is in de lucht"
 				},
 				"getable": true,
-				"setable": true
+				"setable": true,
+				"insights": true,
+				"icon": "./assets/airborne.svg"
 		},
 		"ac_number": {
 				"type": "number",
@@ -67,7 +69,9 @@
 					"nl": "Aantal vliegtuigen in bereik"
 				},
 				"getable": true,
-				"setable": false
+				"setable": false,
+				"insights": true,
+				"icon": "./assets/ac_number.svg"
 		},
 		"op": {
 				"type": "string",
@@ -80,7 +84,24 @@
 					"nl": "Operaror van het vliegtuig"
 				},
 				"getable": true,
-				"setable": false
+				"setable": false,
+				"insights": false,
+				"icon": "./assets/op.svg"
+		},
+		"oc": {
+			"type": "string",
+			"title": {
+					"en": "Country",
+					"nl": "Land"
+			},
+			"desc": {
+				"en": "Origin country",
+				"nl": "Land van oorsprong"
+			},
+			"getable": true,
+			"setable": false,
+			"insights": false,
+			"icon": "./assets/oc.svg"
 		},
 		"to": {
 				"type": "string",
@@ -93,7 +114,9 @@
 					"nl": "Luchthaven van bestemming"
 				},
 				"getable": true,
-				"setable": false
+				"setable": false,
+				"insights": false,
+				"icon": "./assets/to.svg"
 		},
 		"dst": {
 				"type": "number",
@@ -106,7 +129,9 @@
 					"nl": "km"
 				},
 				"getable": true,
-				"setable": false
+				"setable": false,
+				"insights": false,
+				"icon": "./assets/dst.svg"
 		},
 		"alt": {
 				"type": "number",
@@ -119,7 +144,9 @@
 					"nl": "m"
 				},
 				"getable": true,
-				"setable": false
+				"setable": false,
+				"insights": false,
+				"icon": "./assets/alt.svg"
 		},
 		"spd": {
 				"type": "number",
@@ -132,7 +159,9 @@
 					"nl": "km/u"
 				},
 				"getable": true,
-				"setable": false
+				"setable": false,
+				"insights": false,
+				"icon": "./assets/spd.svg"
 		},
 		"mdl": {
 				"type": "string",
@@ -145,7 +174,9 @@
 					"nl": "Model van het vliegtuig"
 				},
 				"getable": true,
-				"setable": false
+				"setable": false,
+				"insights": false,
+				"icon": "./assets/mdl.svg"
 		},
 		"loc": {
 				"type": "string",
@@ -158,7 +189,9 @@
 					"nl": "Locatie van het vliegtuig"
 				},
 				"getable": true,
-				"setable": false
+				"setable": false,
+				"insights": false,
+				"icon": "./assets/loc.svg"
 		},
 		"brng": {
 				"type": "string",
@@ -171,7 +204,9 @@
 					"nl": "Vliegrichting"
 				},
 				"getable": true,
-				"setable": false
+				"setable": false,
+				"insights": false,
+				"icon": "./assets/brng.svg"
 		},
 		"tsecs": {
 				"type": "string",
@@ -180,7 +215,9 @@
 						"nl": "Track tijd"
 				},
 				"getable": true,
-				"setable": false
+				"setable": false,
+				"insights": false,
+				"icon": "./assets/tsecs.svg"
 		}
 	},
 	"drivers": [
@@ -195,7 +232,7 @@
 			 "small": "drivers/radar/assets/images/small.jpg"
 		 	},
 			"class": "sensor",
-			"capabilities": [ "ac_number", "op", "to", "dst", "alt", "mdl" ],
+			"capabilities": [ "ac_number", "dst", "alt", "oc" ],
 			"capabilitiesOptions": {
 				"ac_number": {
 					"preventInsights": false
@@ -207,42 +244,73 @@
 					"preventInsights": true
 				}
 			},
-			"mobile": {
-				"components": [
-					{
-						"id": "icon",
-						"capabilities": []
-					},
-					{
-						"id": "sensor",
-						"capabilities": [ "ac_number", "op", "to", "dst", "alt", "mdl" ],
-						"options": {
-							"icons": {
-								"ac_number": "./drivers/radar/assets/ac_number.svg",
-								"op": "./drivers/radar/assets/op.svg",
-								"to": "./drivers/radar/assets/to.svg",
-								"dst": "./drivers/radar/assets/dst.svg",
-								"alt": "./drivers/radar/assets/alt.svg",
-								"mdl": "./drivers/radar/assets/mdl.svg"
-							}
-						}
-					}
-				]
-			},
 			"pair": [
 				{
-					"id": "list_devices",
-					"template": "list_devices",
-					"navigation": {
-							"next": "add_devices"
-					}
-				},
-				{
-						"id": "add_devices",
-						"template": "add_devices"
+					"id": "pair"
 				}
 			],
 			"settings": [
+				{
+					"type": "group",
+					"label": {
+						"en": "Radar service settings",
+						"nl": "Radar dienst instellingen"
+					},
+					"children": [
+						{
+							"id": "service",
+							"type": "label",
+							"label": {
+								"en": "Service",
+								"nl": "Dienst"
+							},
+							"hint": {
+								"en": "Some services are open, some require a (free/paid) subscription.",
+								"nl": "Sommige diensten zijn open, sommige hebben een (gratis/betaald) abonnement."
+							  },
+							"value": ""
+						},
+						{
+							"id": "username",
+							"type": "text",
+							"label": {
+								"en": "Username",
+								"nl": "Gebruikersnaam"
+							},
+							"hint": {
+								"en": "Only fill in a username if the selected service requires one.",
+								"nl": "Vul alleen een gebruikersnaam in als de geselecteerde dienst dat nodig heeft."
+							  },
+							"value": ""
+						},
+						{
+							"id": "password",
+							"type": "password",
+							"label": {
+								"en": "Password",
+								"nl": "Wachtwoord"
+							},
+							"hint": {
+								"en": "Only fill in a passworrd if the selected service requires one.",
+								"nl": "Vul alleen een wachtwoord in als de geselecteerde dienst dat nodig heeft."
+							  },
+							"value": ""
+						},
+						{
+							"id": "APIKey",
+							"type": "password",
+							"label": {
+								"en": "API Key",
+								"nl": "API Sleutel"
+							},
+							"hint": {
+								"en": "Only fill in an API key if the selected service requires one.",
+								"nl": "Vul alleen een API sleutel in als de geselecteerde dienst dat nodig heeft."
+							  },
+							"value": ""
+						}
+					]
+				},
 				{
 					"type": "group",
 					"label": {
@@ -257,44 +325,38 @@
 								"en": "Latitude",
 								"nl": "Breedtegraad"
 							},
+							"hint": {
+								"en": "The distance of aircraft will be based on the radar location.",
+								"nl": "De afstand van toestellen wordt bepaald op basis van de radar locatie."
+							  },
 							"value": 52.228936
 						},
 						{
-							"id": "lng",
+							"id": "lon",
 							"type": "number",
 							"label": {
 								"en": "Longitude",
 								"nl": "Lengtegraad"
 							},
+							"hint": {
+								"en": "The distance of aircraft will be based on the radar location.",
+								"nl": "De afstand van toestellen wordt bepaald op basis van de radar locatie."
+							  },
 							"value": 5.321492
 						},
 						{
-							"id": "dstU",
+							"id": "dst",
 							"type": "number",
 							"label": {
 								"en": "Range (km)",
 								"nl": "Straal (km)"
 							},
-							"attr": { "min": 0, "max": 50000 },
+							"hint": {
+								"en": "The radar will find aircrafts within the set range.",
+								"nl": "De radar zal toestellen vinden binnen de ingestelde straal."
+							  },
+							"attr": { "min": 0, "max": 100 },
 							"value": 3
-						},
-						{
-							"id": "altLm",
-							"type": "number",
-							"label": {
-								"en": "Min. altitude (m)",
-								"nl": "Min. hoogte (m)"
-							},
-							"value": 0
-						},
-						{
-							"id": "altUm",
-							"type": "number",
-							"label": {
-								"en": "Max. altitude (m)",
-								"nl": "Max. hoogte (m)"
-							},
-							"value": 12000
 						},
 						{
 							"id": "pollingInterval",
@@ -311,109 +373,10 @@
 				{
 					"type": "group",
 					"label": {
-						"en": "Included types",
-						"nl": "Inbegrepen typen"
-					},
-					"children": [
-						{
-							"id": "unknown",
-							"type": "checkbox",
-							"label": {
-								"en": "Unknown",
-								"nl": "Onbekend"
-							},
-							"value": true
-						},
-						{
-							"id": "land",
-							"type": "checkbox",
-							"label": {
-								"en": "Aircraft",
-								"nl": "Luchtvaartuig"
-							},
-							"value": true
-						},
-						{
-							"id": "sea",
-							"type": "checkbox",
-							"label": {
-								"en": "Sea plane",
-								"nl": "Water vliegtuig"
-							},
-							"value": true
-						},
-						{
-							"id": "amphibian",
-							"type": "checkbox",
-							"label": {
-								"en": "Amphibian",
-								"nl": "Amfibisch"
-							},
-							"value": true
-						},
-						{
-							"id": "helicopter",
-							"type": "checkbox",
-							"label": {
-								"en": "Helicopter",
-								"nl": "Helicopter"
-							},
-							"value": true
-						},
-						{
-							"id": "gyrocopter",
-							"type": "checkbox",
-							"label": {
-								"en": "Gyrocopter",
-								"nl": "Gyrocopter"
-							},
-							"value": true
-						},
-						{
-							"id": "tiltwing",
-							"type": "checkbox",
-							"label": {
-								"en": "Tiltwing",
-								"nl": "Tiltwing"
-							},
-							"value": true
-						},
-						{
-							"id": "vehicle",
-							"type": "checkbox",
-							"label": {
-								"en": "Ground vehicle",
-								"nl": "Grond voertuig"
-							},
-							"value": true
-						},
-						{
-							"id": "tower",
-							"type": "checkbox",
-							"label": {
-								"en": "Tower",
-								"nl": "Toren"
-							},
-							"value": true
-						}
-					]
-				},
-				{
-					"type": "group",
-					"label": {
 						"en": "Limit the results to the selected filters",
 						"nl": "Beperk de resultaten tot de aangevinkte filters"
 					},
 					"children": [
-						{
-							"id": "mil",
-							"type": "checkbox",
-							"label": {
-								"en": "Military",
-								"nl": "Militair"
-							},
-							"value": false
-						},
 						{
 							"id": "int",
 							"type": "checkbox",
@@ -421,6 +384,10 @@
 								"en": "Interesting",
 								"nl": "Interessant"
 							},
+							"hint": {
+								"en": "Is the aircraft marked as interesting.",
+								"nl": "Staat het toestel gemarkeerd als interessant."
+							  },
 							"value": false
 						},
 						{
@@ -451,42 +418,16 @@
 						},
 						{
 							"id": "sqk",
-							"type": "dropdown",
-							"value": "0000",
+							"type": "text",
+							"value": "",
 							"label": {
-									"en": "Emergency",
-									"nl": "In nood"
+									"en": "Squawk",
+									"nl": "Squawk"
 							},
-							"values": [
-								{
-									"id": "0000",
-									"label": {
-										"en": "---",
-										"nl": "---"
-									}
-								},
-								{
-									"id": "7700",
-									"label": {
-										"en": "Emergency",
-										"nl": "In nood"
-									}
-								},
-								{
-									"id": "7500",
-									"label": {
-										"en": "Hijack",
-										"nl": "Kaping"
-									}
-								},
-								{
-									"id": "7600",
-									"label": {
-										"en": "Lost communications",
-										"nl": "Communicatie storing"
-									}
-								}
-							]
+							"hint": {
+								"en": "Only aircraft that broadcast the entered emergency squawk will be included.",
+								"nl": "Alleen toestellen die de ingevoerde squawk uitzenden worden inbegrepen"
+							}
 						}
 					]
 				}
@@ -503,7 +444,7 @@
 			 "small": "drivers/tracker/assets/images/small.jpg"
 			},
 			"class": "sensor",
-			"capabilities": [ "onoff", "loc", "brng", "alt" , "spd", "to", "tsecs" ],
+			"capabilities": [ "onoff", "loc", "brng", "alt" , "spd", "to", "dst", "tsecs" ],
 			"capabilitiesOptions": {
 				"onoff": {
 					"preventInsights": false,
@@ -513,6 +454,9 @@
 					"preventInsights": true
 				},
 				"spd": {
+					"preventInsights": true
+				},
+				"dst": {
 					"preventInsights": true
 				}
 			},
@@ -524,15 +468,16 @@
 					},
 					{
 						"id": "sensor",
-						"capabilities": [ "loc", "brng", "alt" , "spd", "to", "tsecs" ],
+						"capabilities": [ "loc", "brng", "alt" , "spd", "to", "dst", "tsecs" ],
 						"options": {
 							"icons": {
-								"loc": "./drivers/tracker/assets/loc.svg",
-								"brng": "./drivers/tracker/assets/brng.svg",
-								"alt": "./drivers/tracker/assets/alt.svg",
-								"spd": "./drivers/tracker/assets/spd.svg",
-								"to": "./drivers/tracker/assets/to.svg",
-								"tsecs": "./drivers/tracker/assets/tsecs.svg"
+								"loc": "./assets/loc.svg",
+								"brng": "./assets/brng.svg",
+								"alt": "./assets/alt.svg",
+								"spd": "./assets/spd.svg",
+								"to": "./assets/to.svg",
+								"dst": "./assets/dst.svg",
+								"tsecs": "./assets/tsecs.svg"
 							}
 						}
 					}
@@ -540,15 +485,7 @@
 			},
 			"pair": [
 				{
-					"id": "list_devices",
-					"template": "list_devices",
-					"navigation": {
-							"next": "add_devices"
-					}
-				},
-				{
-						"id": "add_devices",
-						"template": "add_devices"
+					"id": "pair"
 				}
 			],
 			"settings": [
@@ -566,6 +503,10 @@
 								"en": "Home latitude",
 								"nl": "Thuis breedtegraad"
 							},
+							"hint": {
+								"en": "The distance of the tracked aircraft will be based on the home location.",
+								"nl": "De afstand van het toestel wordt bepaald op basis van de thuis locatie."
+							  },
 							"value": 52.228936
 						},
 						{
@@ -575,6 +516,10 @@
 								"en": "Home longitude",
 								"nl": "Thuis lengtegraad"
 							},
+							"hint": {
+								"en": "The distance of the tracked aircraft will be based on the home location.",
+								"nl": "De afstand van het toestel wordt bepaald op basis van de thuis locatie."
+							  },
 							"value": 5.321492
 						},
 						{
@@ -584,6 +529,10 @@
 								"en": "ICAO",
 								"nl": "ICAO"
 							},
+							"hint": {
+								"en": "Use either ICAO or Registration or Callsign, and leave the others blank.",
+								"nl": "Gebruik of ICAO of Registratie of Callsign, en laat de overige leeg."
+							  },
 							"value": "------"
 						},
 						{
@@ -593,6 +542,10 @@
 								"en": "Registration",
 								"nl": "Registratie"
 							},
+							"hint": {
+								"en": "Use either ICAO or Registration or Callsign, and leave the others blank.",
+								"nl": "Gebruik of ICAO of Registratie of Callsign, en laat de overige leeg."
+							  },
 							"value": ""
 						},
 						{
@@ -602,6 +555,10 @@
 								"en": "Callsign",
 								"nl": "Callsign"
 							},
+							"hint": {
+								"en": "Use either ICAO or Registration or Callsign, and leave the others blank.",
+								"nl": "Gebruik of ICAO of Registratie of Callsign, en laat de overige leeg."
+							  },
 							"value": ""
 						},
 						{
@@ -712,15 +669,6 @@
 					"example": false
 					},
 					{
-					"name":"species",
-					"type": "string",
-					"title": {
-						"en":"species",
-						"nl":"soort"
-						},
-					"example": "Helicopter"
-					},
-					{
 					"name":"icao",
 					"type": "string",
 					"title": {
@@ -782,6 +730,15 @@
 						"nl":"naar"
 						},
 					"example": "EHAM Amsterdam Airport Schiphol, Netherlands"
+					},
+					{
+					"name":"oc",
+					"type": "string",
+					"title": {
+						"en":"country",
+						"nl":"land"
+						},
+					"example": "Belgium"
 					}
 				]
 			},
@@ -876,15 +833,6 @@
 					"example": false
 					},
 					{
-					"name":"species",
-					"type": "string",
-					"title": {
-						"en":"species",
-						"nl":"soort"
-						},
-					"example": "Helicopter"
-					},
-					{
 					"name":"icao",
 					"type": "string",
 					"title": {
@@ -946,6 +894,15 @@
 						"nl":"naar"
 						},
 					"example": "EHAM Amsterdam Airport Schiphol, Netherlands"
+					},
+					{
+					"name":"oc",
+					"type": "string",
+					"title": {
+						"en":"country",
+						"nl":"land"
+						},
+					"example": "Belgium"
 					}
 				]
 			},
@@ -1040,15 +997,6 @@
 					"example": false
 					},
 					{
-					"name":"species",
-					"type": "string",
-					"title": {
-						"en":"species",
-						"nl":"soort"
-						},
-					"example": "Helicopter"
-					},
-					{
 					"name":"icao",
 					"type": "string",
 					"title": {
@@ -1110,6 +1058,15 @@
 						"nl":"naar"
 						},
 					"example": "EHAM Amsterdam Airport Schiphol, Netherlands"
+					},
+					{
+					"name":"oc",
+					"type": "string",
+					"title": {
+						"en":"country",
+						"nl":"land"
+						},
+					"example": "Belgium"
 					}
 				]
 			},
@@ -1274,6 +1231,15 @@
 						"nl":"naar"
 						},
 					"example": "EHAM Amsterdam Airport Schiphol, Netherlands"
+					},
+					{
+					"name":"oc",
+					"type": "string",
+					"title": {
+						"en":"country",
+						"nl":"land"
+						},
+					"example": "Belgium"
 					}
 				]
 			},
@@ -1438,6 +1404,15 @@
 						"nl":"naar"
 						},
 					"example": "EHAM Amsterdam Airport Schiphol, Netherlands"
+					},
+					{
+					"name":"oc",
+					"type": "string",
+					"title": {
+						"en":"country",
+						"nl":"land"
+						},
+					"example": "Belgium"
 					}
 				]
 			},
@@ -1602,6 +1577,15 @@
 						"nl":"naar"
 						},
 					"example": "EHAM Amsterdam Airport Schiphol, Netherlands"
+					},
+					{
+					"name":"oc",
+					"type": "string",
+					"title": {
+						"en":"country",
+						"nl":"land"
+						},
+					"example": "Belgium"
 					}
 				]
 			},
@@ -1766,6 +1750,15 @@
 						"nl":"naar"
 						},
 					"example": "EHAM Amsterdam Airport Schiphol, Netherlands"
+					},
+					{
+					"name":"oc",
+					"type": "string",
+					"title": {
+						"en":"country",
+						"nl":"land"
+						},
+					"example": "Belgium"
 					}
 				]
 			},
@@ -1930,6 +1923,15 @@
 						"nl":"naar"
 						},
 					"example": "EHAM Amsterdam Airport Schiphol, Netherlands"
+					},
+					{
+					"name":"oc",
+					"type": "string",
+					"title": {
+						"en":"country",
+						"nl":"land"
+						},
+					"example": "Belgium"
 					}
 				]
 			}

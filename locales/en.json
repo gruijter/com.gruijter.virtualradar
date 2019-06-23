@@ -1,10 +1,32 @@
 {
+	"pair": {
+		"title": "Add a virtual radar",
+		"instructions": "Select the source of the information. OpenSky is free, but provides limited and sometimes inaccurate information. For other services you need an account",
+		"radarSelection": "Select the radar source",
+		"openSky": "openSky",
+		"adsbExchangeFeeder": "ADSB Exchange (feeder)",
+		"adsbExchangePaid": "ADSB Exchange (paid)",
+		"username": "Username",
+		"password": "Password",
+		"APIKey": "API Key",
+		"testSettings": "Save",
+		"success": "Success!"
+  },
 	"settings": {
-		"app": {
-			"title"				: "Virtual Radar debug logs",
-			"logs"				: "logs",
-			"deletelogs"	: "delete logs",
-			"getlogs"     : "get logs"
+		"benefit": "Virtual aircraft radar.",
+		"tab1": {
+			"title": "Instructions",
+			"addDeviceTitle": "Add a new device",
+			"addDeviceInstructions": "Add a new device via the Homey tab `Devices`."
+		},
+		"tab2": {
+			"title": "Debug Logs",
+			"logs": "Logs",
+			"deletelogs": "Delete logs",
+			"updateLogs": "Refresh logs",
+			"deleteWarning": "Delete all logs?",
+			"deleted": "Logs deleted!"
 		}
 	}
+
 }

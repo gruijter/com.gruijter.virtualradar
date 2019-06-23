@@ -1,5 +1,6 @@
+/* eslint-disable prefer-destructuring */
 /*
-Copyright 2018, Robin de Gruijter (gruijter@hotmail.com)
+Copyright 2018, 2019, Robin de Gruijter (gruijter@hotmail.com)
 
 This file is part of com.gruijter.virtualradar.
 
@@ -26,32 +27,60 @@ const crypto = require('crypto');
 class TrackerDriver extends Homey.Driver {
 
 	onInit() {
-		this.log('ScannerDriver onInit');
+		this.log('TrackerDriver onInit');
 		// init some variables
+		this.radarServices = {
+			openSky: {
+				name: 'openSky',
+				capabilities: ['onoff', 'loc', 'brng', 'alt', 'spd', 'to', 'dst', 'tsecs'],
+				APIKey: false,
+			},
+			adsbExchangeFeeder: {
+				name: 'adsbExchangeFeeder',
+				capabilities: ['onoff', 'loc', 'brng', 'alt', 'spd', 'to', 'dst', 'tsecs'],
+				APIKey: true,
+			},
+			// adsbExchangePaid: {
+			// 	name: 'adsbExchangePaid',
+			// 	capabilities: ['onoff', 'loc', 'brng', 'alt', 'spd', 'to', 'dst', 'tsecs'],
+			// },
+		};
 	}
 
-	onPairListDevices(data, callback) {
-		const id = `Radar_${crypto.randomBytes(4).toString('hex')}`; // e.g Radar_f9b327e7
-		const devices = [
-			{
-				name: id,
-				data: { id },
-				settings: {
-					pollingInterval: 180, // seconds
-					lat: Homey.ManagerGeolocation.getLatitude(),
-					lng: Homey.ManagerGeolocation.getLongitude(),
-					ico: '------',
-					reg: '',
-					call: '',
-					// filters for after recieving ac list
-					onlyGnd: true,
-					onlyAir: true,
-				},
-			},
-		];
-		this.log(devices);
-		callback(null, devices);
+	onPair(socket) {
+		socket.on('validate', async (data, callback) => {
+			try {
+				this.log('save button pressed in frontend');
+				const service = data.radarSelection || 'openSky';
+				const id = `${this.radarServices[service].name}_${crypto.randomBytes(3).toString('hex')}`; // e.g openSky_f9b327
+				const device = {
+					name: id,
+					data: { id },
+					settings: {
+						pollingInterval: 20, // seconds
+						lat: Math.round(Homey.ManagerGeolocation.getLatitude() * 100000000) / 100000000,
+						lon: Math.round(Homey.ManagerGeolocation.getLongitude() * 100000000) / 100000000,
+						dst: 5, //	Distance in kilometres,
+						ico: data.ico || '',
+						reg: data.reg || '',
+						call: data.call || '',
+						onlyGnd: false,
+						onlyAir: true,
+						service: this.radarServices[service].name,
+						username: data.username,
+						password: data.password,
+						APIKey: data.APIKey,
+					},
+					capabilities: this.radarServices[service].capabilities,
+				};
+				callback(null, JSON.stringify(device)); // report success to frontend
+			}	catch (error) {
+				this.error('Pair error', error);
+				callback(error);
+			}
+		});
 	}
+
 
 }
 
