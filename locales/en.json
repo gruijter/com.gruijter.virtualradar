@@ -13,11 +13,11 @@
 		"success": "Success!"
   },
 	"settings": {
-		"benefit": "Virtual aircraft radar.",
+		"benefit": "Virtual aircraft radar",
 		"tab1": {
 			"title": "Instructions",
 			"addDeviceTitle": "Add a new device",
-			"addDeviceInstructions": "Add a new device via the Homey tab `Devices`."
+			"addDeviceInstructions": "Add a new device via the Homey tab `Devices`. Radar finds all aircraft in range of your Homey location. Tracker will track a single aircraft. Select the data source. OpenSky is free, but provides limited and sometimes inaccurate information."
 		},
 		"tab2": {
 			"title": "Debug Logs",

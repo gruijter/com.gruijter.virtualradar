@@ -25,18 +25,18 @@ const Radar = require('../../radar');
 const geo = require('../../reverseGeo');
 // const util = require('util');
 
-// function toHHMM(secs) {
-// 	const secNum = parseInt(secs, 10);
-// 	const hours = Math.floor(secNum / 3600);
-// 	const minutes = Math.floor((secNum - (hours * 3600)) / 60);
-// 	// const seconds = secNum - (hours * 3600) - (minutes * 60);
-// 	let HH = `${hours}`;
-// 	let MM = `${minutes}`;
-// 	if (hours < 10) { HH = `0${hours}`; }
-// 	if (minutes < 10) { MM = `0${minutes}`; }
-// 	// if (seconds < 10) { SS = `0${seconds}`; }
-// 	return `${HH}:${MM}`;
-// }
+function toHHMM(secs) {
+	const secNum = parseInt(secs, 10);
+	const hours = Math.floor(secNum / 3600);
+	const minutes = Math.floor((secNum - (hours * 3600)) / 60);
+	// const seconds = secNum - (hours * 3600) - (minutes * 60);
+	let HH = `${hours}`;
+	let MM = `${minutes}`;
+	if (hours < 10) { HH = `0${hours}`; }
+	if (minutes < 10) { MM = `0${minutes}`; }
+	// if (seconds < 10) { SS = `0${seconds}`; }
+	return `${HH}:${MM}`;
+}
 
 function getDirection(bearing) {
 	let direction = '-';
@@ -72,29 +72,36 @@ function getDirection(bearing) {
 }
 
 function getTokens(ac) {
+	if (!ac) return {};
 	const tokens = {
-		lat: ac.lat,
-		lon: ac.lon,
-		dst: ac.dst / 1000 || 0, // The distance to the aircraft in kilometres.
-		brng: ac.brng || 0, // The bearing from the browser to the aircraft clockwise from 0° north
-		alt: ac.gAlt || 0, // Geometric altitude in meters. Can be null.
-		spd: ac.spd || 0, // Velocity over ground in m/s. Can be null.
-		vsi: ac.vsi || 0, // Vertical rate in m/s.
-		gnd: ac.gnd || false, // true or false
-		sqk: ac.sqk || '',
-		help: ac.sqk === '7500' || ac.sqk === '7600' || ac.sqk === '7700', // True if the aircraft is transmitting an emergency squawk
-		// 7500 = Hijack code, 7600 = Lost Communications, radio problem, 7700 = Emergency
 		icao: ac.icao || '-',
 		call: ac.call || '-', // The callsign
 		oc: ac.oc || '-', // The origin country
 		// posTime: ac.posTime, // Unix timestamp (seconds) for the last position update
+		// lastSeen
+		lon: ac.lon,
+		lat: ac.lat,
+		// bAlt
+		alt: ac.gAlt || 0, // Geometric altitude in meters. Can be null.
+		gnd: ac.gnd || false, // true or false
+		spd: ac.spd || 0, // Velocity over ground in m/s. Can be null.
+		brng: ac.brng || 0, // The bearing from the browser to the aircraft clockwise from 0° north
+		vsi: ac.vsi || 0, // Vertical rate in m/s.
+		// gAlt,
+		sqk: ac.sqk || '',
+		help: ac.sqk === '7500' || ac.sqk === '7600' || ac.sqk === '7700', // True if the aircraft is transmitting an emergency squawk
+		// 7500 = Hijack code, 7600 = Lost Communications, radio problem, 7700 = Emergency
+		// spi
+		reg: ac.reg || '-', // the aircraft registration
 		from: ac.from || '-', // the departure airport
 		to: ac.to || '-', // the destination airport
 		op: ac.op || '-', // the operator
 		mdl: ac.mdl || '-', // the aircraft model (and make?)
-		reg: ac.reg || '-', // the aircraft registration
-		// species: ac.species || '-', // the aircraft species
 		mil: ac.mil || false, // true if known military aircraft
+		dst: ac.dst / 1000 || 0, // The distance to the aircraft in kilometres.
+		loc: ac.locString || '-', // the geo location Country-Area-City
+		// trackStart
+		tsecs: ac.tsecs || 0, // tracking time in seconds
 	};
 	return tokens;
 }
@@ -107,7 +114,7 @@ class Tracker extends Homey.Device {
 		clearInterval(this.intervalIdDevicePoll);	// if polling, stop polling
 		this.settings = this.getSettings();
 		this.radar = new Radar[this.settings.service](this.settings);
-		this.ac = {};
+		this.ac = undefined;
 		this.flowCards = {};
 		this.registerFlowCards();
 		this.intervalIdDevicePoll = setInterval(async () => {
@@ -152,33 +159,22 @@ class Tracker extends Homey.Device {
 
 	async scan() {
 		try {
+			const acName = this.getName();
 			const opts = this.settings;
 			const acList = await this.radar.getAc(opts);
 			const ac = acList[0];
-			if (ac) {
-				ac.locString = await geo.getAclocString(ac); // reverse ReverseGeocoding
-			}
-			this.setHomeyAcState(ac);	// flowcards and stuff
-			// const locString = await geo.getAclocString(ac); // reverse ReverseGeocoding
-			// console.log(locString);
-			this.setAcCapabilities(ac);
-			this.ac = ac || this.ac;
-		} catch (error) {
-			this.error(error);
-		}
-	}
-
-	setHomeyAcState(ac) {
-		try {
-			const acName = this.getName();
 			// ac is present in airspace (transmitting)
 			if (ac) {
-				if (!ac.icao) return; // why do I need this?
+				// calculate tracking time
+				ac.trackStart = this.ac ? this.ac.trackStart : Date.now();
+				ac.tsecs = Math.round((Date.now() - ac.trackStart) / 1000) || 0;
+				ac.locString = await geo.getAclocString(ac); // reverse ReverseGeocoding
 				const tokens = getTokens(ac);
 				// this.log(tokens);
 				// aircraft entering airspace (started transmitting)
-				if (!this.ac) {
+				if (!this.ac || !this.ac.icao) {
 					this.log(`${acName} icao: '${ac.icao}', started transmitting loc: '${ac.lat}/${ac.lon}'`);
+					ac.trackStart = Date.now();
 					this.flowCards.trackerOnlineTrigger
 						.trigger(this, tokens)
 						.catch(this.error);
@@ -190,19 +186,21 @@ class Tracker extends Homey.Device {
 					.catch(this.error);
 				this.setCapability('onoff', !ac.gnd);
 				// aircraft went airborne
-				if (!ac.gnd && this.ac.gnd) {
+				if (!ac.gnd && this.ac && this.ac.gnd) {
 					this.log(`${acName} icao: '${ac.icao}', just went airborne loc: '${ac.lat}/${ac.lon}'`);
 					this.flowCards.wentAirborneTrigger
 						.trigger(this, tokens)
 						.catch(this.error);
 				}
 				// aircraft just landed
-				if (ac.gnd && !this.ac.gnd) {
+				if (ac.gnd && this.ac && !this.ac.gnd) {
 					this.log(`${acName} icao: '${ac.icao}', just landed loc: '${ac.lat}/${ac.lon}'`);
 					this.flowCards.justLandedTrigger
 						.trigger(this, tokens)
 						.catch(this.error);
 				}
+				this.ac = ac;
+				this.setAcCapabilities(ac);
 				return;
 			}
 			// aircraft left airspace (stopped transmitting)
@@ -214,6 +212,10 @@ class Tracker extends Homey.Device {
 				this.flowCards.trackerOfflineTrigger
 					.trigger(this, tokens)
 					.catch(this.error);
+				this.ac = {
+					locString: this.ac.locString,
+				};
+				this.setAcCapabilities();
 			} else {	// there is no aircraft detected
 				this.setCapability('onoff', false);
 			}
@@ -246,7 +248,7 @@ class Tracker extends Homey.Device {
 			this.setCapability('spd', ac.spd);
 			this.setCapability('to', ac.to || '-');
 			this.setCapability('dst', dst || 0);
-			// this.setCapability('tsecs', toHHMM(ac.TSecs));
+			this.setCapability('ttime', toHHMM(ac.tsecs));
 		} catch (error) {
 			this.error(error);
 		}

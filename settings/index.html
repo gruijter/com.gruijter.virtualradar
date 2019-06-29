@@ -1,71 +1,36 @@
 <!doctype html>
 <html>
-    <head>
-        <!-- The '/homey.js' script must be included in your settings view to work -->
-        <script type="text/javascript" src="/homey.js" data-origin="settings"></script>
-   </head>
-    <body>
-
-        <h1 data-i18n="settings.app.title"></h1>
-        <form id="netgear">
-
-        </form>
-
-        <div>
-        	<button type="button" class="right" id="button_deletelog" onclick="deleteLogs()" data-i18n="settings.app.deletelogs">Get Logs</button>
-        	<button type="button" class="right" id="button_getlog" onclick="showLogs()" data-i18n="settings.app.getlogs">Get Logs</button>
-        </div>
-
-        <p data-i18n="settings.app.logs"></p>
-        <div id="loglines"></div>
-
-        <script type="text/javascript">
-
-        var currentValues = {};
-        var HomeyAPI = null;
-
-        function onHomeyReady(Homey){
-           HomeyAPI = Homey;
-					 showLogs();
-           Homey.ready();
-				 }
-
-				function showLogs() {
-					HomeyAPI.api('GET', 'getlogs/', function(err, result) {
-						if (!err) {
-							document.getElementById('loglines').innerHTML = '';
-							for (var i=(result.length - 1); i >= 0; i--) {
-								var icaoSearch = /(?:icao: ')(.*?)(?:')/g;
-								var callSearch = /(?:call: ')(.*?)(?:')/g;
-								var regSearch = /(?:reg: ')(.*?)(?:')/g;
-								var locSearch = /(?:loc: ')(.*?)(?:')/g;
-								// https://www.openstreetmap.org/?mlat=57.5529102&mlon=22.5148625#map=16/57.5709/22.4579
-								var line = result[i];
-								line = line.replace('[log] [ManagerDrivers]','');
-								line = line.replace(icaoSearch, `<a href="https://junzisun.com/adb/?q=$1">icao: $1</a>`);
-								line = line.replace(callSearch, `<a href="https://uk.flightaware.com/live/flight/$1">call: $1</a>`);
-								// line = line.replace(regSearch, `<a href="http://www.airport-data.com/aircraft/$1.html">reg: $1</a>`);
-								line = line.replace(regSearch, `<a href="https://uk.flightaware.com/live/flight/$1">reg: $1</a>`);
-								line = line.replace(locSearch, `<a href="http://www.osm.org/#map=13/$1" target="_blank">loc: $1</a>`);
-								// line = line.replace(locSearch, `<a href=\"http://www.osm.org/?mlat=${RegExp.$1.split('/')[0]}&mlon=${RegExp.$1.split('/')[1]}#map=13/$1\" target=\"_blank\">loc: $1</a>`);
-								document.getElementById('loglines').innerHTML += line;
-								document.getElementById('loglines').innerHTML += "<br />";
-							}
-						};
-					});
-				}
-				function deleteLogs() {
-					 HomeyAPI.api('GET', 'deletelogs/', function(err, result) {
-						 if (err) {
-							 HomeyAPI.alert( err.message, 'error' ); // [, String icon], Function callback )
-						 } else {
-							 HomeyAPI.alert( 'Logs deleted!', 'info' );
-							 showLogs();
-						 }
-					 });
-				}
-
-        </script>
-
-    </body>
+<head>
+	<link rel="stylesheet" type="text/css" href="styles.css" />
+	<script type="text/javascript" src="/homey.js" data-origin="settings"></script>
+	<script type="text/javascript" src="/manager/webserver/assets/js/jquery.js"></script>
+	<script type="text/javascript" src="settings.js" data-origin="settings"></script>
+</head>
+<body>
+	<div id="app">
+		<p data-i18n="settings.benefit" class="benefit">Virtual aircraft radar</p>
+		<div class="rTable tabs">
+			<div class="rTableRow">
+				<div id="tabb1" class="tab tab-inactive" onclick="showTab(1)" data-i18n="settings.tab1.title">Instructions</div>
+				<div id="tabb2" class="tab tab-inactive" onclick="showTab(2)" data-i18n="settings.tab2.title">Log</div>
+			</div>
+		</div>
+		<div class="tab-content">
+			<div style="height:8px" class="panel"></div>
+			<div id="tab1" class="panel" style="display: none;">
+				<fieldset class="listContainer">
+					<legend data-i18n="settings.tab1.addDeviceTitle">Add radar or tracker device</legend>
+					<p data-i18n="settings.tab1.addDeviceInstructions" class="instructions">Instructions</p>
+				</fieldset>
+			</div>
+			<div id="tab2" class="panel" style="display: none;">
+				<div class="setting">
+					<label class="settings-item-description" data-i18n="settings.tab2.deletelogs"></label>
+					<button id="deleteButton" class="btn" onclick="deleteLogs()" data-i18n="settings.tab2.deletelogs">Delete</button>
+				</div>
+				<div id="loglines" class="instructions"></div>
+			</div>
+		</div>
+	</div>
+</body>
 </html>

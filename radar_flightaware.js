@@ -161,7 +161,7 @@ class VirtualRadar {
 	}
 
 	_getBounds() {
-		const bounds = this.center.boundingCoordinates(this.range / 1000);
+		const bounds = this.center.boundingCoordinates(this.range / 1000, undefined, true);
 		return {
 			lamin: bounds[0]._degLat,
 			lomin: bounds[0]._degLon,
@@ -172,7 +172,7 @@ class VirtualRadar {
 
 	_getAcDistance(ac) {
 		const acLoc = new GeoPoint(ac.lat, ac.lon);
-		return this.center.distanceTo(acLoc);
+		return this.center.distanceTo(acLoc, true);
 	}
 
 	_makeHttpsRequest(options) {

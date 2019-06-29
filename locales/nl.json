@@ -1,3 +1,32 @@
 {
+	"pair": {
+		"title": "Virtuele radar toevoegen",
+		"instructions": "Kies de informatiebron. OpenSky is gratis maar biedt beperkte en soms onjuiste informatie. Voor andere bronnen heb je een account nodig",
+		"radarSelection": "Kies de radar bron",
+		"openSky": "openSky",
+		"adsbExchangeFeeder": "ADSB Exchange (feeder)",
+		"adsbExchangePaid": "ADSB Exchange (paid)",
+		"username": "Gebruikersnaam",
+		"password": "Wachtwoord",
+		"APIKey": "API Key",
+		"testSettings": "Opslaan",
+		"success": "Succes!"
+  },
+	"settings": {
+		"benefit": "Virtuele luchtvaart radar",
+		"tab1": {
+			"title": "Instructies",
+			"addDeviceTitle": "Toevoegen nieuw apparaat",
+			"addDeviceInstructions": "Voeg een nieuw apparaat toe via de Homey tab `Apparaten`. Radar vindt alle vliegtuigen in bereik van je Homey locatie. Tracker volgt een individueel vliegtuig. Kies de informatiebron. OpenSky is gratis maar biedt beperkte en soms onjuiste informatie."
+		},
+		"tab2": {
+			"title": "Debug Logs",
+			"logs": "Logs",
+			"deletelogs": "Verwijder logs",
+			"updateLogs": "Ververs logs",
+			"deleteWarning": "Alle logs verwijderen?",
+			"deleted": "Logs verwijderd!"
+		}
+	}
 
 }

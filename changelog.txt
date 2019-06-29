@@ -1,5 +1,6 @@
 Version changelog
 
+v3.1.0  2019.06.29 Many, many fixes. Greatly extended the openSky info. Readme update. NL translation.
 v3.0.0  2019.06.22 Free ADSB-Exchange not working anymore. Changed to openSky and ADSB-Exchange_Feeder as data source.
 v2.0.4	2018.08.12 reduced memory usage
 v2.0.3	2018.07.15 fix flow cards with undefined tokens

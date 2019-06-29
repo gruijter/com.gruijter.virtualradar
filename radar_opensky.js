@@ -1,3 +1,4 @@
+/* eslint-disable prefer-destructuring */
 /*
 Copyright 2018, 2019, Robin de Gruijter (gruijter@hotmail.com)
 
@@ -89,6 +90,7 @@ class VirtualRadar {
 				lomin: bounds.lomin, //	lower bound for the longitude in decimal degrees
 				lamax: bounds.lamax, //	upper bound for the latitude in decimal degrees
 				lomax: bounds.lomax, //	upper bound for the longitude in decimal degrees
+				extended: true, // no clue what this does....
 			};
 			const headers = {
 				'cache-control': 'no-cache',
@@ -105,7 +107,7 @@ class VirtualRadar {
 			}
 			// convert state to ac-data
 			const acList = jsonData.states
-				.map(state => Promise.resolve(this._getAcNormal(state)));
+				.map(async state => Promise.resolve(await this._getAcNormal(state)));
 			return Promise.all(acList);
 		} catch (error) {
 			return Promise.resolve(error);
@@ -140,8 +142,103 @@ class VirtualRadar {
 			}
 			// convert state to ac-data
 			const acList = jsonData.states
-				.map(state => Promise.resolve(this._getAcNormal(state)));
+				.map(async state => Promise.resolve(await this._getAcNormal(state)));
 			return Promise.all(acList);
+		} catch (error) {
+			return Promise.reject(error);
+		}
+	}
+
+	// returns the route, operator and flightnumber of a specific aircraft
+	async _getRoute(ac) {
+		// https://opensky-network.org/api/routes?callsign=KLM57N
+		// { callsign: 'KLM52X', route: ['EDDT', 'EHAM'], updateTime: 1561812529000, operatorIata: 'KL', flightNumber: 1826}
+		try {
+			if (!ac.call) return Promise.resolve(ac);
+			const query = { callsign: ac.call };
+			const headers = {
+				'cache-control': 'no-cache',
+			};
+			const options = {
+				hostname: 'opensky-network.org',
+				path: `/api/routes?${qs.stringify(query)}`,
+				headers,
+				method: 'GET',
+			};
+			const jsonData = await this._makeRequest(options)
+				.catch(() => undefined);
+			if (!jsonData || !jsonData.callsign) {
+				return Promise.resolve(ac);
+			}
+			// convert routes to ac-data
+			const acEnriched = ac;
+			acEnriched.from = jsonData.route[0];
+			acEnriched.to = jsonData.route[1];
+			acEnriched.op = jsonData.operatorIata;
+			acEnriched.flightNumber = jsonData.flightNumber;
+			return Promise.resolve(acEnriched);
+		} catch (error) {
+			return Promise.reject(error);
+		}
+	}
+
+	// returns the registration and model of a specific aircraft
+	async _getMeta(ac) {
+		// https://opensky-network.org/api/metadata/aircraft/icao/a1f788
+		// { registration: 'PH-BXE',
+		// manufacturerName: 'Boeing',
+		// manufacturerIcao: 'BOEING',
+		// model: '737NG 8K2/W',
+		// typecode: 'B738',
+		// serialNumber: '29595',
+		// lineNumber: '',
+		// icaoAircraftClass: 'L2J',
+		// selCal: '',
+		// operator: '',
+		// operatorCallsign: 'KLM',
+		// operatorIcao: 'KLM',
+		// operatorIata: '',
+		// owner: 'Klm Royal Dutch Airlines',
+		// categoryDescription: 'No ADS-B Emitter Category Information',
+		// registered: null,
+		// regUntil: null,
+		// status: '',
+		// built: null,
+		// firstFlightDate: null,
+		// engines: '',
+		// modes: false,
+		// adsb: false,
+		// acars: false,
+		// vdl: false,
+		// notes: '',
+		// country: 'Kingdom of the Netherlands',
+		// lastSeen: null,
+		// firstSeen: null,
+		// icao24: '48415e',
+		// timestamp: 1527559200000 }
+		try {
+			if (!ac.icao) return Promise.resolve(ac);
+			const headers = {
+				'cache-control': 'no-cache',
+			};
+			const options = {
+				hostname: 'opensky-network.org',
+				path: `/api/metadata/aircraft/icao/${ac.icao}`,
+				headers,
+				method: 'GET',
+			};
+			const jsonData = await this._makeRequest(options)
+				.catch(() => undefined);
+			if (!jsonData) {
+				return Promise.resolve(ac);
+			}
+			// convert to ac-data
+			const acEnriched = ac;
+			acEnriched.reg = jsonData.registration;
+			acEnriched.model = jsonData.model;
+			acEnriched.op = jsonData.operatorIcao || ac.op;
+			acEnriched.icaoAircraftClass = jsonData.icaoAircraftClass; // e.g. 'L2J';
+			return Promise.resolve(acEnriched);
 		} catch (error) {
 			return Promise.reject(error);
 		}
@@ -157,13 +254,13 @@ class VirtualRadar {
 			lastSeen: state[4],
 			lon: state[5],
 			lat: state[6],
-			bAlt: state[7],
+			bAlt: Math.round((Number(state[7] || 0) * 0.3048)), // galt * 0.3048 = m
 			gnd: state[8],
-			spd: state[9], // * 1.852,??? speed indication makes no sense
+			spd: Math.round(((Number(state[9] || 0)) * 1.852 * 1.852)), // Spd * 1.852 = km/h // speed indication makes no sense
 			brng: state[10],
-			vsi: state[11],
-			// sensors: state[12],
-			gAlt: state[13],
+			vsi: Math.round(((Number(state[11] || 0)) * 1.852)), // Spd * 1.852 = km/h,
+			sensors: state[12],
+			gAlt: Math.round((Number(state[13] || 0) * 0.3048)), // galt * 0.3048 = m
 			sqk: state[14],
 			spi: state[15],
 			// posSource: state[16],
@@ -180,11 +277,13 @@ class VirtualRadar {
 		ac.dst = Math.round(this._getAcDistance(ac) * 1000);
 		// const faData = await this.fa.getFlightInfo(ac.callSign);
 		// Object.assign(ac, faData);
-		return Promise.resolve(ac);
+		const acEnriched = await this._getRoute(ac);
+		const acEnriched2 = await this._getMeta(acEnriched);
+		return Promise.resolve(acEnriched2);
 	}
 
 	_getBounds() {
-		const bounds = this.center.boundingCoordinates(this.range / 1000);
+		const bounds = this.center.boundingCoordinates(this.range / 1000, undefined, true);
 		return {
 			lamin: bounds[0]._degLat,
 			lomin: bounds[0]._degLon,
@@ -195,7 +294,7 @@ class VirtualRadar {
 
 	_getAcDistance(ac) {
 		const acLoc = new GeoPoint(ac.lat, ac.lon);
-		return this.center.distanceTo(acLoc);
+		return this.center.distanceTo(acLoc, true);
 	}
 
 	async _makeRequest(options) {
@@ -206,14 +305,13 @@ class VirtualRadar {
 			}
 			const jsonData = JSON.parse(result.body);
 			// this.log(util.inspect(jsonData, { depth: null, colors: true }));
-			if (jsonData.time === undefined) {
-				throw Error('Invalid response from API');
-			}
-			this.lastScan = jsonData.time;
+			// if (jsonData.time === undefined) {
+			// 	throw Error('Invalid response from API');
+			// }
 			if (!jsonData.states) {
 				jsonData.states = [];
 			}
-			this.lastScan = jsonData.time;
+			this.lastScan = jsonData.time || Date.now();
 			return Promise.resolve(jsonData);
 		} catch (error) {
 			return Promise.reject(error);
@@ -237,7 +335,6 @@ class VirtualRadar {
 			req.end();
 		});
 	}
-
 }
 
 module.exports = VirtualRadar;

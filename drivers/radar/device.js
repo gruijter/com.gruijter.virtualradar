@@ -24,27 +24,36 @@ const Radar = require('../../radar');
 // const util = require('util');
 
 function getTokens(ac) {
+	if (!ac) return {};
 	const tokens = {
-		dst: ac.dst / 1000 || 0, // The distance to the aircraft in kilometres.
-		brng: ac.brng || 0, // The bearing from the browser to the aircraft clockwise from 0° north
-		alt: ac.gAlt || 0, // Geometric altitude in meters. Can be null.
-		spd: ac.spd || 0, // Velocity over ground in m/s. Can be null.
-		vsi: ac.vsi || 0, // Vertical rate in m/s.
-		gnd: ac.gnd || false, // true or false
-		sqk: ac.sqk || '',
-		help: ac.sqk === '7500' || ac.sqk === '7600' || ac.sqk === '7700', // True if the aircraft is transmitting an emergency squawk
-		// 7500 = Hijack code, 7600 = Lost Communications, radio problem, 7700 = Emergency
 		icao: ac.icao || '-',
 		call: ac.call || '-', // The callsign
 		oc: ac.oc || '-', // The origin country
 		// posTime: ac.posTime, // Unix timestamp (seconds) for the last position update
+		// lastSeen
+		lon: ac.lon,
+		lat: ac.lat,
+		// bAlt
+		alt: ac.gAlt || 0, // Geometric altitude in meters. Can be null.
+		gnd: ac.gnd || false, // true or false
+		spd: ac.spd || 0, // Velocity over ground in m/s. Can be null.
+		brng: ac.brng || 0, // The bearing from the browser to the aircraft clockwise from 0° north
+		vsi: ac.vsi || 0, // Vertical rate in m/s.
+		// gAlt,
+		sqk: ac.sqk || '',
+		help: ac.sqk === '7500' || ac.sqk === '7600' || ac.sqk === '7700', // True if the aircraft is transmitting an emergency squawk
+		// 7500 = Hijack code, 7600 = Lost Communications, radio problem, 7700 = Emergency
+		// spi
+		reg: ac.reg || '-', // the aircraft registration
 		from: ac.from || '-', // the departure airport
 		to: ac.to || '-', // the destination airport
 		op: ac.op || '-', // the operator
 		mdl: ac.mdl || '-', // the aircraft model (and make?)
-		reg: ac.reg || '-', // the aircraft registration
-		// species: ac.species || '-', // the aircraft species
 		mil: ac.mil || false, // true if known military aircraft
+		dst: ac.dst / 1000 || 0, // The distance to the aircraft in kilometres.
+		loc: ac.locString || '-', // the geo location Country-Area-City
+		// trackStart
+		tsecs: ac.tsecs || 0, // tracking time in seconds
 	};
 	return tokens;
 }
@@ -110,7 +119,12 @@ class RadarDevice extends Homey.Device {
 				.filter(ac => !this.settings.int || ac.spi)	// interesting / special purpose indicator
 				.filter(ac => this.settings.sqk === '' || this.settings.sqk === ac.sqk);	// squawk filter is set
 			// check for present in airspace here
-			newAcList.forEach((ac) => {
+			newAcList.forEach((ac, index) => {
+				// calculate tracking time while in radar reach
+				const acListAcArray = this.acList.filter(item => item.icao === ac.icao);
+				const acListAc = acListAcArray[0];
+				newAcList[index].trackStart = acListAc ? acListAc.trackStart : Date.now();
+				newAcList[index].tsecs = Math.round((Date.now() - newAcList[index].trackStart) / 1000) || 0;
 				// check for entering airspace here
 				const knownAc = this.acList.filter(sac => sac.icao === ac.icao).length;
 				const tokens = getTokens(ac);
@@ -121,16 +135,21 @@ class RadarDevice extends Homey.Device {
 						.trigger(this, tokens)
 						.catch(this.error);
 				}
-				// this.log(`icao: '${ac.Icao}' present in airspace!`);
+				// console.log(`icao: '${ac.icao}' present in airspace!`);
+				// console.log(tokens);
 				this.flowCards.acPresentTrigger
 					.trigger(this, tokens)
 					.catch(this.error);
 			});
 			// check for leaving airspace here
-			const leftAc = this.acList.filter(ac => newAcList.filter(tac => tac.icao === ac.icao).length === 0);
-			leftAc.forEach((ac) => {
+			const leftAcList = this.acList.filter(ac => newAcList.filter(tac => tac.icao === ac.icao).length === 0);
+			leftAcList.forEach((ac) => {
 				this.log(`icao: '${ac.icao}', leaving airspace!`);
-				const tokens = getTokens(ac);
+				// calculate tracking time while in radar reach
+				const leftAc = ac;
+				// leftAc.trackStart = ac.trackStart || Date.now();
+				leftAc.tsecs = Math.round((Date.now() - ac.trackStart) / 1000) || 0;
+				const tokens = getTokens(leftAc);
 				// this.log(tokens);
 				this.flowCards.acLeftTrigger
 					.trigger(this, tokens)
@@ -163,12 +182,10 @@ class RadarDevice extends Homey.Device {
 				this.setCapability('mdl', '-');
 			}
 			this.acList = newAcList;
-			return Promise.resolve(acArray);
+			// Promise.resolve(acArray);
+			return;
 		} catch (error) {
-			if (error.code === 'ECONNRESET') {
-				this.error('openSky service timeout');
-			} else this.error(error);
-			return error;
+			this.error(error);
 		}
 	}
 

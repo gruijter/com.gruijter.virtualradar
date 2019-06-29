@@ -105,6 +105,7 @@ class VirtualRadar {
 			call: state.call,
 			oc: state.cou,
 			posTime: Number(state.postime),
+			lastseen: Number(state.postime),
 			lon: Number(state.lon),
 			lat: Number(state.lat),
 			bAlt: Math.round((Number(state.alt || 0) * 0.3048)), // galt * 0.3048 = m
@@ -120,7 +121,7 @@ class VirtualRadar {
 			to: state.to,
 			op: state.opicao,
 			mdl: state.type,
-			dst: Number(state.dst) * 1.852 * 1000,
+			dst: Math.round(Number(state.dst) * 1.852 * 1000),
 			mil: state.mil === '1',
 		};
 		if (isNaN(ac.dst)) {

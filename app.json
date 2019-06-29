@@ -4,7 +4,7 @@
 		"en": "Virtual Radar",
 		"nl": "Virtuele Radar"
 	},
-	"version": "3.0.0",
+	"version": "3.1.0",
 	"compatibility": ">=1.5.0",
 	"sdk": 2,
 	"description": {
@@ -208,7 +208,7 @@
 				"insights": false,
 				"icon": "./assets/brng.svg"
 		},
-		"tsecs": {
+		"ttime": {
 				"type": "string",
 				"title": {
 						"en": "Track time",
@@ -217,7 +217,7 @@
 				"getable": true,
 				"setable": false,
 				"insights": false,
-				"icon": "./assets/tsecs.svg"
+				"icon": "./assets/ttime.svg"
 		}
 	},
 	"drivers": [
@@ -232,7 +232,7 @@
 			 "small": "drivers/radar/assets/images/small.jpg"
 		 	},
 			"class": "sensor",
-			"capabilities": [ "ac_number", "dst", "alt", "oc" ],
+			"capabilities": [ "ac_number", "to", "op", "mdl", "dst", "alt", "oc" ],
 			"capabilitiesOptions": {
 				"ac_number": {
 					"preventInsights": false
@@ -243,6 +243,28 @@
 				"alt": {
 					"preventInsights": true
 				}
+			},
+			"mobile": {
+				"components": [
+					{
+						"id": "icon"
+					},
+					{
+						"id": "sensor",
+						"capabilities": [ "ac_number", "to", "op", "mdl", "dst", "alt", "oc" ],
+						"options": {
+							"icons": {
+								"ac_number": "./assets/ac_number.svg",
+								"to": "./assets/to.svg",
+								"op": "./assets/op.svg",
+								"mdl": "./assets/mdl.svg",
+								"dst": "./assets/dst.svg",
+								"alt": "./assets/alt.svg",
+								"oc": "./assets/oc.svg"
+							}
+						}
+					}
+				]
 			},
 			"pair": [
 				{
@@ -267,45 +289,6 @@
 							"hint": {
 								"en": "Some services are open, some require a (free/paid) subscription.",
 								"nl": "Sommige diensten zijn open, sommige hebben een (gratis/betaald) abonnement."
-							  },
-							"value": ""
-						},
-						{
-							"id": "username",
-							"type": "text",
-							"label": {
-								"en": "Username",
-								"nl": "Gebruikersnaam"
-							},
-							"hint": {
-								"en": "Only fill in a username if the selected service requires one.",
-								"nl": "Vul alleen een gebruikersnaam in als de geselecteerde dienst dat nodig heeft."
-							  },
-							"value": ""
-						},
-						{
-							"id": "password",
-							"type": "password",
-							"label": {
-								"en": "Password",
-								"nl": "Wachtwoord"
-							},
-							"hint": {
-								"en": "Only fill in a passworrd if the selected service requires one.",
-								"nl": "Vul alleen een wachtwoord in als de geselecteerde dienst dat nodig heeft."
-							  },
-							"value": ""
-						},
-						{
-							"id": "APIKey",
-							"type": "password",
-							"label": {
-								"en": "API Key",
-								"nl": "API Sleutel"
-							},
-							"hint": {
-								"en": "Only fill in an API key if the selected service requires one.",
-								"nl": "Vul alleen een API sleutel in als de geselecteerde dienst dat nodig heeft."
 							  },
 							"value": ""
 						}
@@ -444,7 +427,7 @@
 			 "small": "drivers/tracker/assets/images/small.jpg"
 			},
 			"class": "sensor",
-			"capabilities": [ "onoff", "loc", "brng", "alt" , "spd", "to", "dst", "tsecs" ],
+			"capabilities": [ "onoff", "loc", "brng", "alt" , "spd", "to", "dst", "ttime" ],
 			"capabilitiesOptions": {
 				"onoff": {
 					"preventInsights": false,
@@ -468,7 +451,7 @@
 					},
 					{
 						"id": "sensor",
-						"capabilities": [ "loc", "brng", "alt" , "spd", "to", "dst", "tsecs" ],
+						"capabilities": [ "loc", "brng", "alt" , "spd", "to", "dst", "ttime" ],
 						"options": {
 							"icons": {
 								"loc": "./assets/loc.svg",
@@ -477,7 +460,7 @@
 								"spd": "./assets/spd.svg",
 								"to": "./assets/to.svg",
 								"dst": "./assets/dst.svg",
-								"tsecs": "./assets/tsecs.svg"
+								"ttime": "./assets/ttime.svg"
 							}
 						}
 					}
@@ -489,6 +472,28 @@
 				}
 			],
 			"settings": [
+				{
+					"type": "group",
+					"label": {
+						"en": "Radar service settings",
+						"nl": "Radar dienst instellingen"
+					},
+					"children": [
+						{
+							"id": "service",
+							"type": "label",
+							"label": {
+								"en": "Service",
+								"nl": "Dienst"
+							},
+							"hint": {
+								"en": "Some services are open, some require a (free/paid) subscription.",
+								"nl": "Sommige diensten zijn open, sommige hebben een (gratis/betaald) abonnement."
+							  },
+							"value": ""
+						}
+					]
+				},
 				{
 					"type": "group",
 					"label": {
@@ -531,7 +536,7 @@
 							},
 							"hint": {
 								"en": "Use either ICAO or Registration or Callsign, and leave the others blank.",
-								"nl": "Gebruik of ICAO of Registratie of Callsign, en laat de overige leeg."
+								"nl": "Gebruik of ICAO of Registratie of Callsign, en laat de overigen leeg."
 							  },
 							"value": "------"
 						},
@@ -544,7 +549,7 @@
 							},
 							"hint": {
 								"en": "Use either ICAO or Registration or Callsign, and leave the others blank.",
-								"nl": "Gebruik of ICAO of Registratie of Callsign, en laat de overige leeg."
+								"nl": "Gebruik of ICAO of Registratie of Callsign, en laat de overigen leeg."
 							  },
 							"value": ""
 						},
@@ -557,7 +562,7 @@
 							},
 							"hint": {
 								"en": "Use either ICAO or Registration or Callsign, and leave the others blank.",
-								"nl": "Gebruik of ICAO of Registratie of Callsign, en laat de overige leeg."
+								"nl": "Gebruik of ICAO of Registratie of Callsign, en laat de overigen leeg."
 							  },
 							"value": ""
 						},
@@ -597,6 +602,24 @@
 				],
 				"tokens":[
 					{
+					"name":"lon",
+					"type": "number",
+					"title": {
+						"en":"lon",
+						"nl":"lon"
+						},
+					"example": 5.3214
+					},
+					{
+					"name":"lat",
+					"type": "number",
+					"title": {
+						"en":"lat",
+						"nl":"lat"
+						},
+					"example": 52.2289
+					},
+					{
 					"name":"dst",
 					"type": "number",
 					"title": {
@@ -640,6 +663,15 @@
 						"nl":"vert."
 						},
 					"example": -12
+					},
+					{
+					"name":"tsecs",
+					"type": "number",
+					"title": {
+						"en":"tracktime",
+						"nl":"tracktijd"
+						},
+					"example": 843
 					},
 					{
 					"name":"gnd",
@@ -739,6 +771,15 @@
 						"nl":"land"
 						},
 					"example": "Belgium"
+					},
+					{
+					"name":"loc",
+					"type": "string",
+					"title": {
+						"en":"location",
+						"nl":"locatie"
+						},
+					"example": "NL Amsterdam"
 					}
 				]
 			},
@@ -761,6 +802,24 @@
 				],
 				"tokens":[
 					{
+					"name":"lon",
+					"type": "number",
+					"title": {
+						"en":"lon",
+						"nl":"lon"
+						},
+					"example": 5.3214
+					},
+					{
+					"name":"lat",
+					"type": "number",
+					"title": {
+						"en":"lat",
+						"nl":"lat"
+						},
+					"example": 52.2289
+					},
+					{
 					"name":"dst",
 					"type": "number",
 					"title": {
@@ -804,6 +863,15 @@
 						"nl":"vert."
 						},
 					"example": -12
+					},
+					{
+					"name":"tsecs",
+					"type": "number",
+					"title": {
+						"en":"tracktime",
+						"nl":"tracktijd"
+						},
+					"example": 843
 					},
 					{
 					"name":"gnd",
@@ -903,6 +971,15 @@
 						"nl":"land"
 						},
 					"example": "Belgium"
+					},
+					{
+					"name":"loc",
+					"type": "string",
+					"title": {
+						"en":"location",
+						"nl":"locatie"
+						},
+					"example": "NL Amsterdam"
 					}
 				]
 			},
@@ -925,6 +1002,24 @@
 				],
 				"tokens":[
 					{
+					"name":"lon",
+					"type": "number",
+					"title": {
+						"en":"lon",
+						"nl":"lon"
+						},
+					"example": 5.3214
+					},
+					{
+					"name":"lat",
+					"type": "number",
+					"title": {
+						"en":"lat",
+						"nl":"lat"
+						},
+					"example": 52.2289
+					},
+					{
 					"name":"dst",
 					"type": "number",
 					"title": {
@@ -968,6 +1063,15 @@
 						"nl":"vert."
 						},
 					"example": -12
+					},
+					{
+					"name":"tsecs",
+					"type": "number",
+					"title": {
+						"en":"tracktime",
+						"nl":"tracktijd"
+						},
+					"example": 843
 					},
 					{
 					"name":"gnd",
@@ -1067,6 +1171,15 @@
 						"nl":"land"
 						},
 					"example": "Belgium"
+					},
+					{
+					"name":"loc",
+					"type": "string",
+					"title": {
+						"en":"location",
+						"nl":"locatie"
+						},
+					"example": "NL Amsterdam"
 					}
 				]
 			},
@@ -1089,6 +1202,24 @@
 				],
 				"tokens":[
 					{
+					"name":"lon",
+					"type": "number",
+					"title": {
+						"en":"lon",
+						"nl":"lon"
+						},
+					"example": 5.3214
+					},
+					{
+					"name":"lat",
+					"type": "number",
+					"title": {
+						"en":"lat",
+						"nl":"lat"
+						},
+					"example": 52.2289
+					},
+					{
 					"name":"dst",
 					"type": "number",
 					"title": {
@@ -1134,6 +1265,15 @@
 					"example": -12
 					},
 					{
+					"name":"tsecs",
+					"type": "number",
+					"title": {
+						"en":"tracktime",
+						"nl":"tracktijd"
+						},
+					"example": 843
+					},
+					{
 					"name":"gnd",
 					"type": "boolean",
 					"title": {
@@ -1159,15 +1299,6 @@
 						"nl":"help"
 						},
 					"example": false
-					},
-					{
-					"name":"species",
-					"type": "string",
-					"title": {
-						"en":"species",
-						"nl":"soort"
-						},
-					"example": "Helicopter"
 					},
 					{
 					"name":"icao",
@@ -1240,6 +1371,15 @@
 						"nl":"land"
 						},
 					"example": "Belgium"
+					},
+					{
+					"name":"loc",
+					"type": "string",
+					"title": {
+						"en":"location",
+						"nl":"locatie"
+						},
+					"example": "NL Amsterdam"
 					}
 				]
 			},
@@ -1262,6 +1402,24 @@
 				],
 				"tokens":[
 					{
+					"name":"lon",
+					"type": "number",
+					"title": {
+						"en":"lon",
+						"nl":"lon"
+						},
+					"example": 5.3214
+					},
+					{
+					"name":"lat",
+					"type": "number",
+					"title": {
+						"en":"lat",
+						"nl":"lat"
+						},
+					"example": 52.2289
+					},
+					{
 					"name":"dst",
 					"type": "number",
 					"title": {
@@ -1307,6 +1465,15 @@
 					"example": -12
 					},
 					{
+					"name":"tsecs",
+					"type": "number",
+					"title": {
+						"en":"tracktime",
+						"nl":"tracktijd"
+						},
+					"example": 843
+					},
+					{
 					"name":"gnd",
 					"type": "boolean",
 					"title": {
@@ -1332,15 +1499,6 @@
 						"nl":"help"
 						},
 					"example": false
-					},
-					{
-					"name":"species",
-					"type": "string",
-					"title": {
-						"en":"species",
-						"nl":"soort"
-						},
-					"example": "Helicopter"
 					},
 					{
 					"name":"icao",
@@ -1413,6 +1571,15 @@
 						"nl":"land"
 						},
 					"example": "Belgium"
+					},
+					{
+					"name":"loc",
+					"type": "string",
+					"title": {
+						"en":"location",
+						"nl":"locatie"
+						},
+					"example": "NL Amsterdam"
 					}
 				]
 			},
@@ -1435,6 +1602,24 @@
 				],
 				"tokens":[
 					{
+					"name":"lon",
+					"type": "number",
+					"title": {
+						"en":"lon",
+						"nl":"lon"
+						},
+					"example": 5.3214
+					},
+					{
+					"name":"lat",
+					"type": "number",
+					"title": {
+						"en":"lat",
+						"nl":"lat"
+						},
+					"example": 52.2289
+					},
+					{
 					"name":"dst",
 					"type": "number",
 					"title": {
@@ -1480,6 +1665,15 @@
 					"example": -12
 					},
 					{
+					"name":"tsecs",
+					"type": "number",
+					"title": {
+						"en":"tracktime",
+						"nl":"tracktijd"
+						},
+					"example": 843
+					},
+					{
 					"name":"gnd",
 					"type": "boolean",
 					"title": {
@@ -1505,15 +1699,6 @@
 						"nl":"help"
 						},
 					"example": false
-					},
-					{
-					"name":"species",
-					"type": "string",
-					"title": {
-						"en":"species",
-						"nl":"soort"
-						},
-					"example": "Helicopter"
 					},
 					{
 					"name":"icao",
@@ -1586,6 +1771,15 @@
 						"nl":"land"
 						},
 					"example": "Belgium"
+					},
+					{
+					"name":"loc",
+					"type": "string",
+					"title": {
+						"en":"location",
+						"nl":"locatie"
+						},
+					"example": "NL Amsterdam"
 					}
 				]
 			},
@@ -1608,6 +1802,24 @@
 				],
 				"tokens":[
 					{
+					"name":"lon",
+					"type": "number",
+					"title": {
+						"en":"lon",
+						"nl":"lon"
+						},
+					"example": 5.3214
+					},
+					{
+					"name":"lat",
+					"type": "number",
+					"title": {
+						"en":"lat",
+						"nl":"lat"
+						},
+					"example": 52.2289
+					},
+					{
 					"name":"dst",
 					"type": "number",
 					"title": {
@@ -1653,6 +1865,15 @@
 					"example": -12
 					},
 					{
+					"name":"tsecs",
+					"type": "number",
+					"title": {
+						"en":"tracktime",
+						"nl":"tracktijd"
+						},
+					"example": 843
+					},
+					{
 					"name":"gnd",
 					"type": "boolean",
 					"title": {
@@ -1678,15 +1899,6 @@
 						"nl":"help"
 						},
 					"example": false
-					},
-					{
-					"name":"species",
-					"type": "string",
-					"title": {
-						"en":"species",
-						"nl":"soort"
-						},
-					"example": "Helicopter"
 					},
 					{
 					"name":"icao",
@@ -1759,6 +1971,15 @@
 						"nl":"land"
 						},
 					"example": "Belgium"
+					},
+					{
+					"name":"loc",
+					"type": "string",
+					"title": {
+						"en":"location",
+						"nl":"locatie"
+						},
+					"example": "NL Amsterdam"
 					}
 				]
 			},
@@ -1781,6 +2002,24 @@
 				],
 				"tokens":[
 					{
+					"name":"lon",
+					"type": "number",
+					"title": {
+						"en":"lon",
+						"nl":"lon"
+						},
+					"example": 5.3214
+					},
+					{
+					"name":"lat",
+					"type": "number",
+					"title": {
+						"en":"lat",
+						"nl":"lat"
+						},
+					"example": 52.2289
+					},
+					{
 					"name":"dst",
 					"type": "number",
 					"title": {
@@ -1826,6 +2065,15 @@
 					"example": -12
 					},
 					{
+					"name":"tsecs",
+					"type": "number",
+					"title": {
+						"en":"tracktime",
+						"nl":"tracktijd"
+						},
+					"example": 843
+					},
+					{
 					"name":"gnd",
 					"type": "boolean",
 					"title": {
@@ -1851,15 +2099,6 @@
 						"nl":"help"
 						},
 					"example": false
-					},
-					{
-					"name":"species",
-					"type": "string",
-					"title": {
-						"en":"species",
-						"nl":"soort"
-						},
-					"example": "Helicopter"
 					},
 					{
 					"name":"icao",
@@ -1932,6 +2171,15 @@
 						"nl":"land"
 						},
 					"example": "Belgium"
+					},
+					{
+					"name":"loc",
+					"type": "string",
+					"title": {
+						"en":"location",
+						"nl":"locatie"
+						},
+					"example": "NL Amsterdam"
 					}
 				]
 			}

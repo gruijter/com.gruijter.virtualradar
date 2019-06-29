@@ -22,6 +22,7 @@ along with com.gruijter.virtualradar.  If not, see <http://www.gnu.org/licenses/
 
 const Homey = require('homey');
 const crypto = require('crypto');
+const Radar = require('../../radar');
 // const util = require('util');
 
 class TrackerDriver extends Homey.Driver {
@@ -32,12 +33,12 @@ class TrackerDriver extends Homey.Driver {
 		this.radarServices = {
 			openSky: {
 				name: 'openSky',
-				capabilities: ['onoff', 'loc', 'brng', 'alt', 'spd', 'to', 'dst', 'tsecs'],
+				capabilities: ['onoff', 'loc', 'brng', 'alt', 'spd', 'to', 'dst', 'ttime'],
 				APIKey: false,
 			},
 			adsbExchangeFeeder: {
 				name: 'adsbExchangeFeeder',
-				capabilities: ['onoff', 'loc', 'brng', 'alt', 'spd', 'to', 'dst', 'tsecs'],
+				capabilities: ['onoff', 'loc', 'brng', 'alt', 'spd', 'to', 'dst', 'ttime'],
 				APIKey: true,
 			},
 			// adsbExchangePaid: {
@@ -53,8 +54,9 @@ class TrackerDriver extends Homey.Driver {
 				this.log('save button pressed in frontend');
 				const service = data.radarSelection || 'openSky';
 				const id = `${this.radarServices[service].name}_${crypto.randomBytes(3).toString('hex')}`; // e.g openSky_f9b327
+				const name = data.ico || data.reg || data.call;
 				const device = {
-					name: id,
+					name,
 					data: { id },
 					settings: {
 						pollingInterval: 20, // seconds
@@ -73,7 +75,12 @@ class TrackerDriver extends Homey.Driver {
 					},
 					capabilities: this.radarServices[service].capabilities,
 				};
-				callback(null, JSON.stringify(device)); // report success to frontend
+				// test if settings work
+				const opts = device.settings;
+				const radar = new Radar[device.settings.service](opts);
+				radar.getAc(opts)
+					.then(() => callback(null, JSON.stringify(device))) // report success to frontend
+					.catch(error => callback(error)); // report failure to frontend
 			}	catch (error) {
 				this.error('Pair error', error);
 				callback(error);

@@ -22,6 +22,7 @@ along with com.gruijter.virtualradar.  If not, see <http://www.gnu.org/licenses/
 
 const Homey = require('homey');
 const crypto = require('crypto');
+const Radar = require('../../radar');
 // const util = require('util');
 
 class RadarDriver extends Homey.Driver {
@@ -32,7 +33,7 @@ class RadarDriver extends Homey.Driver {
 		this.radarServices = {
 			openSky: {
 				name: 'openSky',
-				capabilities: ['ac_number', 'dst', 'alt', 'oc'],
+				capabilities: ['ac_number', 'to', 'op', 'mdl', 'dst', 'alt', 'oc'],
 				APIKey: false,
 			},
 			adsbExchangeFeeder: {
@@ -40,10 +41,10 @@ class RadarDriver extends Homey.Driver {
 				capabilities: ['ac_number', 'to', 'op', 'mdl', 'dst', 'alt', 'oc'],
 				APIKey: true,
 			},
-			adsbExchangePaid: {
-				name: 'adsbExchangePaid',
-				capabilities: ['ac_number', 'to', 'op', 'mdl', 'dst', 'alt', 'oc'],
-			},
+			// adsbExchangePaid: {
+			// 	name: 'adsbExchangePaid',
+			// 	capabilities: ['ac_number', 'to', 'op', 'mdl', 'dst', 'alt', 'oc'],
+			// },
 		};
 	}
 
@@ -52,9 +53,6 @@ class RadarDriver extends Homey.Driver {
 			try {
 				this.log('save button pressed in frontend');
 				const service = data.radarSelection || 'openSky';
-				const username = data.username;
-				const password = data.password;
-				const APIKey = data.APIKey;
 				const id = `${this.radarServices[service].name}_${crypto.randomBytes(3).toString('hex')}`; // e.g openSky_f9b327
 				const device = {
 					name: id,
@@ -69,20 +67,24 @@ class RadarDriver extends Homey.Driver {
 						onlyGnd: false,
 						onlyAir: true,
 						service: this.radarServices[service].name,
-						username,
-						password,
-						APIKey,
+						username: data.username,
+						password: data.password,
+						APIKey: data.APIKey,
 					},
 					capabilities: this.radarServices[service].capabilities,
 				};
-				callback(null, JSON.stringify(device)); // report success to frontend
+				// test if settings work
+				const opts = device.settings;
+				const radar = new Radar[device.settings.service](opts);
+				radar.getAcInRange()
+					.then(() => callback(null, JSON.stringify(device))) // report success to frontend
+					.catch(error => callback(error)); // report failure to frontend
 			}	catch (error) {
 				this.error('Pair error', error);
 				callback(error);
 			}
 		});
 	}
-
 
 }
 
