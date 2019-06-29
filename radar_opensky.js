@@ -110,7 +110,7 @@ class VirtualRadar {
 				.map(async state => Promise.resolve(await this._getAcNormal(state)));
 			return Promise.all(acList);
 		} catch (error) {
-			return Promise.resolve(error);
+			return Promise.reject(error);
 		}
 	}
 
