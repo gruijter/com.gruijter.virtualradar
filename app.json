@@ -22,6 +22,10 @@
 		"name": "Robin de Gruijter",
 		"email": "gruijter@hotmail.com"
 	},
+	"contributors": {
+		"developers": [{"name": "Robin de Gruijter","email": "gruijter@hotmail.com"}],
+		"translators": [{"name": "🇬🇧 Robin"},{"name": "🇳🇱 Robin"}]
+	},
 	"copyright": "Robin de Gruijter (gruijter@hotmail.com)",
 	"license": " GPL-3.0-or-later",
 	"contributing": {
@@ -34,7 +38,7 @@
 	"bugs": {
 		"url": "https://github.com/gruijter/com.gruijter.virtualradar/issues"
 	},
-	"athomForumDiscussionId": 14605,
+	"homeyCommunityTopicId": 14605,
 	"images": {
 		"large": "/assets/images/large.jpg",
 		"small": "/assets/images/small.jpg"
