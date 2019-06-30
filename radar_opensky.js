@@ -172,8 +172,8 @@ class VirtualRadar {
 			}
 			// convert routes to ac-data
 			const acEnriched = ac;
-			acEnriched.from = jsonData.route[0];
-			acEnriched.to = jsonData.route[1];
+			acEnriched.from = jsonData.route[1];
+			acEnriched.to = jsonData.route[0];
 			acEnriched.op = jsonData.operatorIata;
 			acEnriched.flightNumber = jsonData.flightNumber;
 			return Promise.resolve(acEnriched);
@@ -247,20 +247,20 @@ class VirtualRadar {
 	// returns the normalized state of an aircraft
 	async _getAcNormal(state) {
 		const ac = {
-			icao: state[0],
+			icao: state[0].toUpperCase(),
 			call: state[1].replace(/[^0-9a-zA-Z]+/gm, ''),
 			oc: state[2],
 			posTime: state[3],
 			lastSeen: state[4],
 			lon: state[5],
 			lat: state[6],
-			bAlt: Math.round((Number(state[7] || 0) * 0.3048)), // galt * 0.3048 = m
+			bAlt: Math.round(Number(state[7] || 0)), // galt * 0.3048 = ft > m
 			gnd: state[8],
 			spd: Math.round(((Number(state[9] || 0)) * 1.852 * 1.852)), // Spd * 1.852 = km/h // speed indication makes no sense
 			brng: state[10],
 			vsi: Math.round(((Number(state[11] || 0)) * 1.852)), // Spd * 1.852 = km/h,
 			sensors: state[12],
-			gAlt: Math.round((Number(state[13] || 0) * 0.3048)), // galt * 0.3048 = m
+			gAlt: Math.round(Number(state[13] || 0)), // galt * 0.3048 = ft> m
 			sqk: state[14],
 			spi: state[15],
 			// posSource: state[16],

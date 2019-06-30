@@ -112,7 +112,7 @@ class VirtualRadar {
 			gnd: state.gnd !== '0',
 			spd: Math.round(((Number(state.spd || 0)) * 1.852)), // Spd * 1.852 = km/h,
 			brng: Number(state.trak),
-			vsi: Math.round(((Number(state.vsi || 0)) * 1.852)), // Spd * 1.852 = km/h,
+			vsi: Math.round(((Number(state.vsi || 0)) * 0.00508)), // Spd * 0.00508 = m/s,
 			gAlt: Math.round((Number(state.galt || 0) * 0.3048)), // galt * 0.3048 = m
 			sqk: state.sqk,
 			spi: state.interested !== '0',
