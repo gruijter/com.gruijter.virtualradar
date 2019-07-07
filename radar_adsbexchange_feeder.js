@@ -152,7 +152,7 @@ class VirtualRadar {
 			this.lastScan = jsonData.ctime;
 			return Promise.resolve(jsonData);
 		} catch (error) {
-			return Promise.reject(error);
+			return Promise.reject(error.message);
 		}
 	}
 

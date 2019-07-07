@@ -54,8 +54,9 @@ class RadarDriver extends Homey.Driver {
 				this.log('save button pressed in frontend');
 				const service = data.radarSelection || 'openSky';
 				const id = `${this.radarServices[service].name}_${crypto.randomBytes(3).toString('hex')}`; // e.g openSky_f9b327
+				const name = service;
 				const device = {
-					name: id,
+					name,
 					data: { id },
 					settings: {
 						pollingInterval: 20, // seconds

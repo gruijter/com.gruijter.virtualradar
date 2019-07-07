@@ -172,8 +172,8 @@ class VirtualRadar {
 			}
 			// convert routes to ac-data
 			const acEnriched = ac;
-			acEnriched.from = jsonData.route[1];
-			acEnriched.to = jsonData.route[0];
+			acEnriched.from = jsonData.route[0];
+			acEnriched.to = jsonData.route[1];
 			acEnriched.op = jsonData.operatorIata;
 			acEnriched.flightNumber = jsonData.flightNumber;
 			return Promise.resolve(acEnriched);
@@ -314,7 +314,7 @@ class VirtualRadar {
 			this.lastScan = jsonData.time || Date.now();
 			return Promise.resolve(jsonData);
 		} catch (error) {
-			return Promise.reject(error);
+			return Promise.reject(error.message);
 		}
 	}
 
