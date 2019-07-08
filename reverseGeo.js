@@ -99,15 +99,16 @@ const getAclocString = async (ac) => {
 			locString = 'Intl. Water';	// aircraft over sea maybe?
 			return locString;
 		}
+		const alt = ac.gAlt || ac.bAlt;
 		const countryCode = loc.address.country_code.toUpperCase();
 		let local = loc.address.state;
-		if (ac.alt < 2000) {
+		if (alt < 2000) {
 			local = loc.address.city || loc.address.county || loc.address.state_district || local;
 		}
-		if (ac.alt < 500) {
+		if (alt < 500) {
 			local = loc.address.village || loc.address.town || local;
 		}
-		if (ac.alt < 200) {
+		if (alt < 200) {
 			local = loc.address.suburb || local;
 		}
 		locString = `${countryCode} ${local}`;
@@ -118,3 +119,25 @@ const getAclocString = async (ac) => {
 };
 
 module.exports.getAclocString = getAclocString;
+
+
+/*
+{ place_id: 81479432,
+  licence: 'Data © OpenStreetMap contributors, ODbL 1.0. https://osm.org/copyright',
+  osm_type: 'way',
+  osm_id: 27687816,
+  lat: '52.374028',
+  lon: '4.91789314639283',
+  display_name: 'Marinekazerne Amsterdam, Dijksgrachtkade, Oostelijke Eilanden, Amsterdam, Noord-Holland, Nederland, 1019BT, Nederland',
+  address:
+   { address29: 'Marinekazerne Amsterdam',
+     road: 'Dijksgrachtkade',
+     neighbourhood: 'Oostelijke Eilanden',
+     suburb: 'Amsterdam',
+     city: 'Amsterdam',
+     state: 'Noord-Holland',
+     postcode: '1019BT',
+     country: 'Nederland',
+     country_code: 'nl' },
+  boundingbox: [ '52.3725587', '52.3759276', '4.9143916', '4.9210072' ] }
+*/
