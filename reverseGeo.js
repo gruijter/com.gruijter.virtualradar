@@ -23,27 +23,31 @@ along with com.gruijter.virtualradar.  If not, see <http://www.gnu.org/licenses/
 const https = require('https');
 const qs = require('querystring');
 
-const _makeHttpsRequest = (options) => {
-	return new Promise((resolve, reject) => {
-		const req = https.request(options, (res) => {
-			let resBody = '';
-			res.on('data', (chunk) => {
-				resBody += chunk;
-			});
-			res.once('end', () => {
-				res.body = resBody;
-				return resolve(res); // resolve the request
-			});
+const _makeHttpsRequest = (options = {}) => new Promise((resolve, reject) => {
+	const opts = options;
+	opts.timeout = options.timeout || 5000;
+	const req = https.request(opts, (res) => {
+		let resBody = '';
+		res.on('data', (chunk) => {
+			resBody += chunk;
 		});
-		req.setTimeout(5000, () => {
-			req.abort();
+		res.once('end', () => {
+			if (!res.complete) {
+				return reject(Error('The connection was terminated while the message was still being sent'));
+			}
+			res.body = resBody;
+			return resolve(res); // resolve the request
 		});
-		req.once('error', (e) => {
-			reject(e);
-		});
-		req.end();
 	});
-};
+	req.on('error', (e) => {
+		req.destroy();
+		return reject(e);
+	});
+	req.on('timeout', () => {
+		req.destroy();
+	});
+	req.end();
+});
 
 const reverseGeo = async (lat, lon) => {
 	try {
@@ -119,7 +123,6 @@ const getAclocString = async (ac) => {
 };
 
 module.exports.getAclocString = getAclocString;
-
 
 /*
 { place_id: 81479432,

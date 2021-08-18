@@ -79,7 +79,7 @@ class RadarDriver extends Homey.Driver {
 				const radar = new Radar[device.settings.service](opts);
 				radar.getAcInRange()
 					.then(() => callback(null, JSON.stringify(device))) // report success to frontend
-					.catch(error => callback(error)); // report failure to frontend
+					.catch((error) => callback(error)); // report failure to frontend
 			}	catch (error) {
 				this.error('Pair error', error);
 				callback(error);

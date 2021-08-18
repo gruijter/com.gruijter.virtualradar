@@ -62,7 +62,7 @@ class RadarDevice extends Homey.Device {
 
 	// this method is called when the Device is inited
 	onInit() {
-		this.log(`device init ${this.getClass()} ${this.getName()}}`);
+		this.log(`device init ${this.getClass()} ${this.getName()}`);
 		clearInterval(this.intervalIdDevicePoll);	// if polling, stop polling
 		this.settings = this.getSettings();
 		this.radar = new Radar[this.settings.service](this.settings);
@@ -114,19 +114,19 @@ class RadarDevice extends Homey.Device {
 			const acArray = await this.radar.getAcInRange();
 			// filter out unwanted settings
 			const newAcList = acArray
-				.filter(ac => !this.settings.onlyGnd || ac.gnd)	// on_ground
-				.filter(ac => !this.settings.onlyAir || !ac.gnd)	// not on_ground
-				.filter(ac => !this.settings.int || ac.spi)	// interesting / special purpose indicator
-				.filter(ac => this.settings.sqk === '' || this.settings.sqk === ac.sqk);	// squawk filter is set
+				.filter((ac) => !this.settings.onlyGnd || ac.gnd)	// on_ground
+				.filter((ac) => !this.settings.onlyAir || !ac.gnd)	// not on_ground
+				.filter((ac) => !this.settings.int || ac.spi)	// interesting / special purpose indicator
+				.filter((ac) => this.settings.sqk === '' || this.settings.sqk === ac.sqk);	// squawk filter is set
 			// check for present in airspace here
 			newAcList.forEach((ac, index) => {
 				// calculate tracking time while in radar reach
-				const acListAcArray = this.acList.filter(item => item.icao === ac.icao);
+				const acListAcArray = this.acList.filter((item) => item.icao === ac.icao);
 				const acListAc = acListAcArray[0];
 				newAcList[index].trackStart = acListAc ? acListAc.trackStart : Date.now();
 				newAcList[index].tsecs = Math.round((Date.now() - newAcList[index].trackStart) / 1000) || 0;
 				// check for entering airspace here
-				const knownAc = this.acList.filter(sac => sac.icao === ac.icao).length;
+				const knownAc = this.acList.filter((sac) => sac.icao === ac.icao).length;
 				const tokens = getTokens(ac);
 				if (!knownAc) {
 					this.log(`icao: '${ac.icao}' entering airspace!`);
@@ -142,7 +142,7 @@ class RadarDevice extends Homey.Device {
 					.catch(this.error);
 			});
 			// check for leaving airspace here
-			const leftAcList = this.acList.filter(ac => newAcList.filter(tac => tac.icao === ac.icao).length === 0);
+			const leftAcList = this.acList.filter((ac) => newAcList.filter((tac) => tac.icao === ac.icao).length === 0);
 			leftAcList.forEach((ac) => {
 				this.log(`icao: '${ac.icao}', leaving airspace!`);
 				// calculate tracking time while in radar reach

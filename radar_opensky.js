@@ -1,6 +1,6 @@
 /* eslint-disable prefer-destructuring */
 /*
-Copyright 2018, 2019, Robin de Gruijter (gruijter@hotmail.com)
+Copyright 2018 -2021, Robin de Gruijter (gruijter@hotmail.com)
 
 This file is part of com.gruijter.virtualradar.
 
@@ -76,8 +76,8 @@ class VirtualRadar {
 		this.lon = settings.lon;	//	float	WGS-84 longitude in decimal degrees. Can be null.
 		this.range = settings.dst * 1000;	// float Radar range in m.
 		this.lastScan = 0; // int Unix timestamp (seconds) for the last radar update.
-		this.timeout = 15000; // int Timeout in ms for the http service call
 		this.center = new GeoPoint(this.lat, this.lon);
+		this.timeout = 20000; // int Timeout in ms for the http service call
 		// this.fa = new FlightAware();
 	}
 
@@ -94,6 +94,7 @@ class VirtualRadar {
 			};
 			const headers = {
 				'cache-control': 'no-cache',
+				Connection: 'Keep-Alive',
 			};
 			const options = {
 				hostname: 'opensky-network.org',
@@ -107,7 +108,7 @@ class VirtualRadar {
 			}
 			// convert state to ac-data
 			const acList = jsonData.states
-				.map(async state => Promise.resolve(await this._getAcNormal(state)));
+				.map(async (state) => Promise.resolve(await this._getAcNormal(state)));
 			return Promise.all(acList);
 		} catch (error) {
 			return Promise.reject(error);
@@ -142,7 +143,7 @@ class VirtualRadar {
 			}
 			// convert state to ac-data
 			const acList = jsonData.states
-				.map(async state => Promise.resolve(await this._getAcNormal(state)));
+				.map(async (state) => Promise.resolve(await this._getAcNormal(state)));
 			return Promise.all(acList);
 		} catch (error) {
 			return Promise.reject(error);
@@ -318,23 +319,36 @@ class VirtualRadar {
 		}
 	}
 
-	_makeHttpsRequest(options) {
+	_makeHttpsRequest(options, postData, timeout) {
 		return new Promise((resolve, reject) => {
-			const req = https.request(options, (res) => {
+			const opts = options;
+			opts.timeout = timeout || this.timeout;
+			const req = https.request(opts, (res) => {
 				let resBody = '';
 				res.on('data', (chunk) => {
 					resBody += chunk;
 				});
 				res.once('end', () => {
+					if (!res.complete) {
+						this.error('The connection was terminated while the message was still being sent');
+						return reject(Error('The connection was terminated while the message was still being sent'));
+					}
 					res.body = resBody;
 					return resolve(res); // resolve the request
 				});
 			});
-			req.setTimeout(this.timeout, () => req.abort());
-			req.once('error', e => reject(e));
-			req.end();
+			req.on('error', (e) => {
+				req.destroy();
+				return reject(e);
+			});
+			req.on('timeout', () => {
+				req.destroy();
+			});
+			// req.write(postData);
+			req.end(postData || '');
 		});
 	}
+
 }
 
 module.exports = VirtualRadar;

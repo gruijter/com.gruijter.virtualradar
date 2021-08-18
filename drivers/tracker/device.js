@@ -110,7 +110,7 @@ class Tracker extends Homey.Device {
 
 	// this method is called when the Device is inited
 	onInit() {
-		this.log(`device init ${this.getClass()} ${this.getName()}}`);
+		this.log(`device init ${this.getClass()} ${this.getName()}`);
 		clearInterval(this.intervalIdDevicePoll);	// if polling, stop polling
 		this.settings = this.getSettings();
 		this.radar = new Radar[this.settings.service](this.settings);

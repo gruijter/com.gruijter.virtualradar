@@ -1,5 +1,5 @@
 /*
-Copyright 2018, 2019, Robin de Gruijter (gruijter@hotmail.com)
+Copyright 2018 - 2021, Robin de Gruijter (gruijter@hotmail.com)
 
 This file is part of com.gruijter.virtualradar.
 
@@ -20,14 +20,14 @@ along with com.gruijter.virtualradar.  If not, see <http://www.gnu.org/licenses/
 'use strict';
 
 const Homey = require('homey');
-const https = require('https');
+// const https = require('https');
 const Logger = require('./captureLogs.js');
 
 class VirtualRadarApp extends Homey.App {
 
 	onInit() {
 		this.log('Virtual Radar app is running!');
-		this.logger = new Logger('log', 200);
+		if (!this.logger) this.logger = new Logger({ homey: this, length: 200 });
 		// register some listeners
 		process.on('unhandledRejection', (error) => {
 			this.error('unhandledRejection! ', error);
@@ -59,30 +59,36 @@ class VirtualRadarApp extends Homey.App {
 		return this.logger.logArray;
 	}
 
-	_makeHttpsRequest(options, postData) {
-		return new Promise((resolve, reject) => {
-			const req = https.request(options, (res) => {
-				let resBody = '';
-				res.on('data', (chunk) => {
-					resBody += chunk;
-				});
-				res.on('end', () => {
-					res.body = resBody;
-					return resolve(res); // resolve the request
-				});
-			});
-			req.on('error', (e) => {
-				this.log(e);
-				reject(e);
-			});
-			req.setTimeout(30000, () => {
-				req.abort();
-				reject(Error('Connection timeout'));
-			});
-			req.write(postData);
-			req.end();
-		});
-	}
+	// _makeHttpsRequest(options, postData, timeout) {
+	// 	return new Promise((resolve, reject) => {
+	// 		const opts = options;
+	// 		opts.timeout = timeout || 30000;
+	// 		const req = https.request(opts, (res) => {
+	// 			let resBody = '';
+	// 			res.on('data', (chunk) => {
+	// 				resBody += chunk;
+	// 			});
+	// 			res.once('end', () => {
+	// 				if (!res.complete) {
+	// 					this.error('The connection was terminated while the message was still being sent');
+	// 					return reject(Error('The connection was terminated while the message was still being sent'));
+	// 				}
+	// 				res.body = resBody;
+	// 				return resolve(res); // resolve the request
+	// 			});
+	// 		});
+	// 		req.on('error', (e) => {
+	// 			req.destroy();
+	// 			this.error(e);
+	// 			return reject(e);
+	// 		});
+	// 		req.on('timeout', () => {
+	// 			req.destroy();
+	// 		});
+	// 		// req.write(postData);
+	// 		req.end(postData || '');
+	// 	});
+	// }
 
 }
 
@@ -94,7 +100,6 @@ Search aircraft manufacturers, aircraft types, aircraft registers, airports, air
 https://www.aviationfanatic.com/ent_list.php?ent=15
 
 https://github.com/vradarserver/vrs
-
 
 flight search:
 https://planefinder.net/flight/IBK415

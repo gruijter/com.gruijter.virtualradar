@@ -1,5 +1,5 @@
 /*
-Copyright 2018, 2019, Robin de Gruijter (gruijter@hotmail.com)
+Copyright 2018 - 2021, Robin de Gruijter (gruijter@hotmail.com)
 
 This file is part of com.gruijter.virtualradar.
 
@@ -90,25 +90,33 @@ class PlaneFinder {
 		}
 	}
 
-	_makeHttpsRequest(options) {
+	_makeHttpsRequest(options, postData, timeout) {
 		return new Promise((resolve, reject) => {
-			const req = https.request(options, (res) => {
+			const opts = options;
+			opts.timeout = timeout || this.timeout;
+			const req = https.request(opts, (res) => {
 				let resBody = '';
 				res.on('data', (chunk) => {
 					resBody += chunk;
 				});
 				res.once('end', () => {
+					if (!res.complete) {
+						this.error('The connection was terminated while the message was still being sent');
+						return reject(Error('The connection was terminated while the message was still being sent'));
+					}
 					res.body = resBody;
 					return resolve(res); // resolve the request
 				});
 			});
-			req.setTimeout(this.timeout, () => {
-				req.abort();
+			req.on('error', (e) => {
+				req.destroy();
+				return reject(e);
 			});
-			req.once('error', (e) => {
-				reject(e);
+			req.on('timeout', () => {
+				req.destroy();
 			});
-			req.end();
+			// req.write(postData);
+			req.end(postData || '');
 		});
 	}
 
